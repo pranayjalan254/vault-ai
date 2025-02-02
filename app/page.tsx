@@ -1,11 +1,11 @@
-'use client';
+"use client";
 
-import { useEffect, useState } from 'react';
-import { Navbar } from '@/components/Navbar';
-import { HeroSection } from '@/components/HeroSection';
-import { FeaturesSection } from '@/components/FeaturesSection';
-import { HowItWorks } from '@/components/HowItWorks';
-import { Footer } from '@/components/Footer';
+import { useEffect, useState } from "react";
+import { Navbar } from "@/components/LandingPage/Navbar";
+import { HeroSection } from "@/components/LandingPage/HeroSection";
+import { FeaturesSection } from "@/components/LandingPage/FeaturesSection";
+import { HowItWorks } from "@/components/LandingPage/HowItWorks";
+import { Footer } from "@/components/LandingPage/Footer";
 
 export default function Home() {
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
@@ -15,8 +15,8 @@ export default function Home() {
       setMousePosition({ x: e.clientX, y: e.clientY });
     };
 
-    window.addEventListener('mousemove', handleMouseMove);
-    return () => window.removeEventListener('mousemove', handleMouseMove);
+    window.addEventListener("mousemove", handleMouseMove);
+    return () => window.removeEventListener("mousemove", handleMouseMove);
   }, []);
 
   return (
@@ -24,10 +24,12 @@ export default function Home() {
       <Navbar />
       <main className="min-h-screen bg-black text-white relative overflow-hidden">
         {/* Animated background gradient */}
-        <div 
+        <div
           className="fixed inset-0 bg-gradient-to-br from-purple-900/20 to-black"
           style={{
-            transform: `translate(${mousePosition.x * 0.02}px, ${mousePosition.y * 0.02}px)`,
+            transform: `translate(${mousePosition.x * 0.02}px, ${
+              mousePosition.y * 0.02
+            }px)`,
           }}
         >
           <div className="absolute inset-0 bg-[radial-gradient(circle_500px_at_50%_50%,#3b0764,transparent)]" />
