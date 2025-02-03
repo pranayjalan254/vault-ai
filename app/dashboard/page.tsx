@@ -1,9 +1,9 @@
-"use client";
+'use client'
 
 import React, { useState } from 'react';
 import { Beef as Bee, TrendingUp, Wallet2, BookOpen, ArrowRight, SunMedium, MonitorDot, LogIn, Twitter, MessageSquare, ChevronDown, User, Briefcase, X } from 'lucide-react';
 
-function Dashboard() {
+function App() {
   const [isModelOpen, setIsModelOpen] = useState(false);
   const [selectedModel, setSelectedModel] = useState('Open AI');
   const [activeSection, setActiveSection] = useState('home');
@@ -151,12 +151,12 @@ function Dashboard() {
 
       default:
         return (
-          <div className="flex flex-col items-center justify-center max-w-5xl mx-auto">
+          <div className="flex flex-col items-center justify-center max-w-3xl mx-auto">
             <Bee className="h-16 w-16 text-purple-400 mb-6" />
-            <h1 className="text-4xl font-semibold mb-2 gradient-text">
+            <h1 className="text-4xl font-semibold mb-2 gradient-text text-center">
               Your AI-Powered DeFi Agent
             </h1>
-            <p className="text-gray-400 mb-8 text-lg">
+            <p className="text-gray-400 mb-8 text-lg text-center">
               Manage your crypto portfolio, stake, swap and more with Vault AI
             </p>
 
@@ -179,7 +179,7 @@ function Dashboard() {
                   </button>
                   
                   {isModelOpen && (
-                    <div className="absolute right-0 mt-1 w-36 bg-gray-800/90 border border-gray-700 rounded-lg shadow-lg py-1 backdrop-blur-sm z-10">
+                    <div className="absolute right-0 mt-1 w-36 bg-gray-800/90 border border-gray-700 rounded-lg shadow-lg py-1 backdrop-blur-sm z-50">
                       {models.map((model) => (
                         <button
                           key={model}
@@ -257,7 +257,12 @@ function Dashboard() {
 
         <div className="mb-6">
           <div className="flex items-center justify-between text-purple-400 mb-2">
-            <span>Chats</span>
+            <button 
+              onClick={() => setActiveSection('home')}
+              className="hover:text-purple-300 transition-colors"
+            >
+              Chats
+            </button>
             <button className="p-1 hover:bg-white/5 rounded transition-colors">+</button>
           </div>
         </div>
@@ -301,7 +306,7 @@ function Dashboard() {
 
       {/* Main Content */}
       <div className="pl-64">
-        <div className="p-8">
+        <div className="p-8 min-h-screen flex items-center justify-center">
           {renderMainContent()}
         </div>
       </div>
@@ -309,4 +314,4 @@ function Dashboard() {
   );
 }
 
-export default Dashboard;
+export default App;
