@@ -1,6 +1,6 @@
-export type ChainType = "ethereum" | "base";
+export type ChainType = "ethereum" | "base" | "arbitrum" | "binance" | "polygon";
 
-export interface TokenBalance {
+export interface TokenData {
   token: string;
   symbol: string;
   balance: string;
@@ -11,7 +11,7 @@ export interface TokenBalance {
 
 export interface PortfolioResponse {
   totalValue: string;
-  tokens: TokenBalance[];
+  tokens: TokenData[];
 }
 
 export interface SupportedChain {

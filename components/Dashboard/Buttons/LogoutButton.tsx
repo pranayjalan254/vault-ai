@@ -14,7 +14,7 @@ export function LogoutButton() {
 
   return (
     <button
-      className="w-full py-2 px-4 rounded-lg border border-purple-500 text-purple-400 hover:bg-purple-500/10 flex items-center justify-center gap-2 transition-colors"
+      className="py-2 px-4 rounded-lg border border-purple-500 text-purple-400 hover:bg-purple-500/10 flex items-center justify-center gap-2 transition-colors text-sm"
       disabled={disableLogout}
       onClick={handleLogout}
     >
