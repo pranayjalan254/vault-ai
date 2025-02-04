@@ -1,11 +1,10 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { ArrowRight } from "lucide-react";
-import { useRouter } from "next/navigation";
+
+import { LoginButton } from "./LoginButton";
 
 export function HeroSection() {
-  const router = useRouter();
   const [isVisible, setIsVisible] = useState(false);
 
   useEffect(() => {
@@ -26,13 +25,7 @@ export function HeroSection() {
           Manage your crypto portfolio, stake, swap and more with Vault AI
         </p>
         <div className="flex flex-col sm:flex-row gap-4 justify-center">
-          <button
-            onClick={() => router.push("/dashboard")}
-            className="px-8 py-4 rounded-lg bg-purple-600 hover:bg-purple-700 transition-all hover:scale-105 flex items-center justify-center gap-2"
-          >
-            Get Started
-            <ArrowRight className="w-5 h-5" />
-          </button>
+          <LoginButton />
         </div>
       </div>
     </section>

@@ -1,7 +1,13 @@
-import React from 'react';
-import { Beef as Bee, TrendingUp, Wallet2, BookOpen, ArrowRight } from 'lucide-react';
-import { ModelSelector } from './ModelSelector';
-import { ActionCard } from './ActionCard';
+import React from "react";
+import {
+  Beef as Bee,
+  TrendingUp,
+  Wallet2,
+  BookOpen,
+  ArrowRight,
+} from "lucide-react";
+import { ModelSelector } from "./ModelSelector";
+import { ActionCard } from "./ActionCard";
 
 interface HomeViewProps {
   selectedModel: string;
@@ -11,7 +17,13 @@ interface HomeViewProps {
   models: string[];
 }
 
-export function HomeView({ selectedModel, isModelOpen, setIsModelOpen, setSelectedModel, models }: HomeViewProps) {
+export function HomeView({
+  selectedModel,
+  isModelOpen,
+  setIsModelOpen,
+  setSelectedModel,
+  models,
+}: HomeViewProps) {
   return (
     <div className="flex flex-col items-center justify-center max-w-3xl mx-auto">
       <Bee className="h-16 w-16 text-purple-400 mb-6" />
@@ -46,20 +58,16 @@ export function HomeView({ selectedModel, isModelOpen, setIsModelOpen, setSelect
           title="Trending"
           description="Search the trending tokens"
         />
-        <ActionCard
-          icon={Wallet2}
-          title="Stake"
-          description="Stake Sol"
-        />
+        <ActionCard icon={Wallet2} title="Stake" description="Stake Tokens" />
         <ActionCard
           icon={TrendingUp}
           title="Trade"
-          description="Swap on Jupiter"
+          description="Swap on Base"
         />
         <ActionCard
           icon={BookOpen}
           title="SIP"
-          description="Get developer docs for protocols"
+          description="Get high yield generating protocols"
         />
       </div>
     </div>
