@@ -44,7 +44,7 @@ export function HomeView({
   };
 
   return (
-    <div className="h-full relative">
+    <div className="justify-center h-full my-[88px] relative">
       <div
         className={`transition-all duration-300 ${
           showChat ? "opacity-0 scale-95" : "opacity-100 scale-100"
