@@ -1,12 +1,51 @@
-import React from "react";
-import { usePrivy } from "@privy-io/react-auth";
-import { useUser } from "@privy-io/react-auth";
+import React, { useState } from "react";
+import { usePrivy, useWallets, useUser } from "@privy-io/react-auth";
+import {
+  Twitter,
+  Github,
+  RefreshCw,
+  Plus,
+  Unlink,
+  Copy,
+  Check,
+  Wallet,
+  ChevronDown,
+  ChevronUp,
+} from "lucide-react";
+import { FaDiscord, FaGoogle, FaApple } from "react-icons/fa";
 
 export function AccountView() {
-  const { ready, authenticated } = usePrivy();
-  const { user, refreshUser } = useUser();
+  const [copyStates, setCopyStates] = useState<{ [key: string]: boolean }>({});
+  const [showExternalWallets, setShowExternalWallets] = useState(false);
+  const { wallets } = useWallets();
 
-  if (!ready) {
+  const embeddedWallet = wallets.find(
+    (wallet) => wallet.walletClientType === "privy"
+  );
+
+  const {
+    ready,
+    authenticated,
+    linkApple,
+    linkWallet,
+    linkTwitter,
+    linkDiscord,
+    linkGoogle,
+    linkGithub,
+
+    unlinkTwitter,
+    unlinkApple,
+    unlinkDiscord,
+    unlinkGoogle,
+    unlinkWallet,
+    unlinkGithub,
+  } = usePrivy();
+  const { user, refreshUser } = useUser();
+  const smartWallet = user?.linkedAccounts.find(
+    (account) => account.type === "smart_wallet"
+  );
+  const smartWalletAddress = smartWallet?.address;
+  if (!ready || !authenticated || !user) {
     return (
       <div className="w-full max-w-4xl p-6">
         <div className="animate-pulse space-y-4">
@@ -21,116 +60,249 @@ export function AccountView() {
     );
   }
 
-  if (!authenticated || !user) {
-    return (
-      <div className="w-full max-w-4xl p-6">
-        <p className="text-gray-400">
-          Please connect your wallet to view account details.
-        </p>
-      </div>
-    );
-  }
+  const handleCopy = async (address: string) => {
+    await navigator.clipboard.writeText(address);
+    setCopyStates((prev) => ({ ...prev, [address]: true }));
+    setTimeout(() => {
+      setCopyStates((prev) => ({ ...prev, [address]: false }));
+    }, 2000);
+  };
 
-  const hasSocialConnections =
-    user.twitter || user.discord || user.github || user.farcaster;
-  const hasAdditionalConnections = user.google || user.linkedin;
+  const formatWalletType = (type: string) => {
+    return type.charAt(0).toUpperCase() + type.slice(1) + " Wallet";
+  };
+
+  const connections = [
+    {
+      type: "google",
+      icon: FaGoogle,
+      title: "Google",
+      value: user.google?.email,
+      onLink: linkGoogle,
+      onUnlink: () => unlinkGoogle(user.google?.email!),
+      isLinked: !!user.google,
+    },
+    {
+      type: "apple",
+      icon: FaApple,
+      title: "Apple",
+      value: user.google?.email,
+      onLink: linkApple,
+      onUnlink: () => unlinkApple(user.apple?.subject!),
+      isLinked: !!user.apple,
+    },
+    {
+      type: "wallet",
+      icon: Wallet,
+      title: "Wallet",
+      value: user.wallet?.address,
+      onLink: linkWallet,
+    },
+    {
+      type: "twitter",
+      icon: Twitter,
+      title: "Twitter",
+      value: user.twitter?.username,
+      onLink: linkTwitter,
+      onUnlink: () => unlinkTwitter(user.twitter?.username!),
+      isLinked: !!user.twitter,
+    },
+    {
+      type: "github",
+      icon: Github,
+      title: "GitHub",
+      value: user.github?.username,
+      onLink: linkGithub,
+      onUnlink: () => unlinkGithub(user.github?.subject!),
+      isLinked: !!user.github,
+    },
+    {
+      type: "discord",
+      icon: FaDiscord,
+      title: "Discord",
+      value: user.discord?.username,
+      onLink: linkDiscord,
+      onUnlink: () => unlinkDiscord(user.discord?.subject!),
+      isLinked: !!user.discord,
+    },
+  ];
 
   return (
-    <div className="w-full max-w-4xl space-y-6 animate-fadeIn">
-      <div className="flex justify-between items-center mb-6">
-        <h2 className="text-2xl font-semibold">Account Details</h2>
+    <div className="w-full max-w-4xl space-y-8 animate-fadeIn">
+      {/* Header */}
+      <div className="flex justify-between items-center">
+        <div>
+          <h2 className="text-2xl font-semibold mb-2">Connected Accounts</h2>
+          <p className="text-gray-400">
+            Manage your connected accounts and services
+          </p>
+        </div>
         <button
           onClick={() => refreshUser()}
           className="p-2 hover:bg-gray-800 rounded-full transition-colors"
-          title="Refresh user data"
+          title="Refresh connections"
         >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            className="h-5 w-5"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
-            />
-          </svg>
+          <RefreshCw className="w-5 h-5" />
         </button>
       </div>
 
-      <div className="grid grid-cols-2 gap-6">
-        <div className="space-y-1">
-          <p className="text-sm text-gray-400">User ID</p>
-          <p className="font-medium">{user.id}</p>
+      {/* Wallets Section */}
+      <div className="bg-white/5 p-6 rounded-xl backdrop-blur-sm">
+        <h3 className="text-lg font-medium mb-4">Wallet</h3>
+        <div className="space-y-4">
+          {/* Embedded Wallet */}
+          {embeddedWallet && (
+            <div className="flex items-center justify-between p-4 rounded-lg bg-white/5">
+              <div className="space-y-1">
+                <div className="flex items-center gap-2">
+                  <p className="font-medium">{embeddedWallet.address}</p>
+                  <button
+                    onClick={() => handleCopy(embeddedWallet.address)}
+                    className="p-1.5 hover:bg-gray-700/50 rounded-lg transition-colors relative group"
+                    title="Copy address"
+                  >
+                    {copyStates[embeddedWallet.address] ? (
+                      <Check className="w-4 h-4 text-green-400" />
+                    ) : (
+                      <Copy className="w-4 h-4 text-gray-400 group-hover:text-white" />
+                    )}
+                    {copyStates[embeddedWallet.address] && (
+                      <div className="absolute -top-8 left-1/2 -translate-x-1/2 px-2 py-1 bg-green-500 text-white text-xs rounded shadow-lg">
+                        Copied!
+                      </div>
+                    )}
+                  </button>
+                </div>
+                <p className="text-sm text-gray-400">Embedded Wallet</p>
+              </div>
+              <div className="px-3 py-1 bg-purple-500/20 text-purple-300 rounded-full text-sm">
+                Primary
+              </div>
+            </div>
+          )}
+
+          {/* External Wallets Dropdown */}
+          {wallets.filter((w) => w.walletClientType !== "privy").length > 0 && (
+            <div className="mt-4">
+              <button
+                onClick={() => setShowExternalWallets(!showExternalWallets)}
+                className="flex items-center gap-2 text-sm text-gray-400 hover:text-white transition-colors"
+              >
+                {showExternalWallets ? (
+                  <ChevronUp className="w-4 h-4" />
+                ) : (
+                  <ChevronDown className="w-4 h-4" />
+                )}
+                {showExternalWallets ? "Hide" : "Show"} External Wallets (
+                {wallets.filter((w) => w.walletClientType !== "privy").length})
+              </button>
+
+              {showExternalWallets && (
+                <div className="mt-2 space-y-2 bg-black/20 rounded-lg p-2">
+                  {/* Smart Wallet */}
+                  {smartWalletAddress && (
+                    <div className="flex items-center justify-between p-2 rounded-lg hover:bg-white/5 transition-colors">
+                      <div className="space-y-1">
+                        <p className="text-sm font-medium">
+                          {smartWalletAddress}
+                        </p>
+                        <p className="text-xs text-gray-400">Smart Wallet</p>
+                      </div>
+                      <button
+                        onClick={() => handleCopy(smartWalletAddress)}
+                        className="p-1.5 hover:bg-gray-700/50 rounded-lg transition-colors relative"
+                        title="Copy address"
+                      >
+                        {copyStates[smartWalletAddress] ? (
+                          <Check className="w-3.5 h-3.5 text-green-400" />
+                        ) : (
+                          <Copy className="w-3.5 h-3.5 text-gray-400" />
+                        )}
+                      </button>
+                    </div>
+                  )}
+
+                  {/* External Wallets */}
+                  {wallets
+                    .filter((wallet) => wallet.walletClientType !== "privy")
+                    .map((wallet) => (
+                      <div
+                        key={wallet.address}
+                        className="flex items-center justify-between p-2 rounded-lg hover:bg-white/5 transition-colors"
+                      >
+                        <div className="space-y-1">
+                          <p className="text-sm font-medium">
+                            {wallet.address}
+                          </p>
+                          <p className="text-xs text-gray-400">
+                            {formatWalletType(wallet.walletClientType)}
+                          </p>
+                        </div>
+                        <button
+                          onClick={() => handleCopy(wallet.address)}
+                          className="p-1.5 hover:bg-gray-700/50 rounded-lg transition-colors relative"
+                          title="Copy address"
+                        >
+                          {copyStates[wallet.address] ? (
+                            <Check className="w-3.5 h-3.5 text-green-400" />
+                          ) : (
+                            <Copy className="w-3.5 h-3.5 text-gray-400" />
+                          )}
+                        </button>
+                      </div>
+                    ))}
+                </div>
+              )}
+            </div>
+          )}
         </div>
-        {user.email?.address && (
-          <div className="space-y-1">
-            <p className="text-sm text-gray-400">Email</p>
-            <p className="font-medium">{user.email.address}</p>
-          </div>
-        )}
-        {user.wallet?.address && (
-          <div className="space-y-1">
-            <p className="text-sm text-gray-400">Wallet</p>
-            <p className="font-medium">{user.wallet.address}</p>
-          </div>
-        )}
       </div>
 
-      {hasSocialConnections && (
-        <div className="border-t border-gray-800 pt-6 mt-6">
-          <h3 className="text-xl font-medium mb-4">Social Connections</h3>
-          <div className="grid grid-cols-2 gap-6">
-            {user.twitter && (
-              <div className="space-y-1">
-                <p className="text-sm text-gray-400">Twitter</p>
-                <p className="font-medium">{user.twitter.username}</p>
+      {/* Connected Accounts Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {connections.map((connection) => (
+          <div
+            key={connection.type}
+            className="bg-white/5 p-6 rounded-xl backdrop-blur-sm"
+          >
+            <div className="flex items-start justify-between">
+              <div className="flex items-center gap-3">
+                <connection.icon className="w-5 h-5 text-gray-400" />
+                <div>
+                  <h3 className="font-medium">{connection.title}</h3>
+                  {connection.isLinked ? (
+                    <p className="text-sm text-gray-400">{connection.value}</p>
+                  ) : (
+                    <p className="text-sm text-gray-400">Not connected</p>
+                  )}
+                </div>
               </div>
-            )}
-            {user.discord && (
-              <div className="space-y-1">
-                <p className="text-sm text-gray-400">Discord</p>
-                <p className="font-medium">{user.discord.username}</p>
-              </div>
-            )}
-            {user.github && (
-              <div className="space-y-1">
-                <p className="text-sm text-gray-400">GitHub</p>
-                <p className="font-medium">{user.github.username}</p>
-              </div>
-            )}
-            {user.farcaster && (
-              <div className="space-y-1">
-                <p className="text-sm text-gray-400">Farcaster</p>
-                <p className="font-medium">{user.farcaster.username}</p>
-              </div>
-            )}
+              <button
+                onClick={
+                  connection.isLinked ? connection.onUnlink : connection.onLink
+                }
+                className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
+                  connection.isLinked
+                    ? "bg-red-500/20 text-red-300 hover:bg-red-500/30"
+                    : "bg-purple-500/20 text-purple-300 hover:bg-purple-500/30"
+                }`}
+              >
+                {connection.isLinked ? (
+                  <>
+                    <Unlink className="w-4 h-4" />
+                    Disconnect
+                  </>
+                ) : (
+                  <>
+                    <Plus className="w-4 h-4" />
+                    Connect
+                  </>
+                )}
+              </button>
+            </div>
           </div>
-        </div>
-      )}
-
-      {hasAdditionalConnections && (
-        <div className="border-t border-gray-800 pt-6 mt-6">
-          <h3 className="text-xl font-medium mb-4">Additional Connections</h3>
-          <div className="grid grid-cols-2 gap-6">
-            {user.google && (
-              <div className="space-y-1">
-                <p className="text-sm text-gray-400">Google</p>
-                <p className="font-medium">{user.google.email}</p>
-              </div>
-            )}
-            {user.linkedin && (
-              <div className="space-y-1">
-                <p className="text-sm text-gray-400">LinkedIn</p>
-                <p className="font-medium">{user.linkedin.email}</p>
-              </div>
-            )}
-          </div>
-        </div>
-      )}
+        ))}
+      </div>
     </div>
   );
 }

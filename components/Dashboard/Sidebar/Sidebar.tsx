@@ -3,7 +3,6 @@ import {
   Beef as Bee,
   SunMedium,
   MonitorDot,
-  LogIn,
   Twitter,
   MessageSquare,
   User,
