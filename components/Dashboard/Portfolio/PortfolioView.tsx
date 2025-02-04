@@ -17,7 +17,7 @@ ChartJS.register(ArcElement, Tooltip, Legend);
 export function PortfolioView() {
   const { wallets } = useWallets();
   const { ready, authenticated } = usePrivy();
-  const { user, refreshUser } = useUser();
+  const { user } = useUser();
   const [selectedChain, setSelectedChain] = useState<ChainType>("ethereum");
   const [portfolioData, setPortfolioData] = useState<PortfolioResponse | null>(
     null
@@ -103,9 +103,6 @@ export function PortfolioView() {
       </div>
     );
   }
-
-  const hasSocialConnections =
-    user.twitter || user.discord || user.github || user.farcaster;
 
   return (
     <div className="w-full max-w-6xl mx-auto p-6 space-y-6">

@@ -34,8 +34,10 @@ export function Sidebar({ activeSection, setActiveSection }: SidebarProps) {
       <div className="mb-6">
         <div className="flex items-center justify-between text-purple-400 mb-2">
           <button
-            onClick={() => setActiveSection("home")}
-            className="hover:text-purple-300 transition-colors"
+            onClick={() => setActiveSection("chat")}
+            className={`hover:text-purple-300 transition-colors ${
+              activeSection === "chat" ? "text-purple-300" : ""
+            }`}
           >
             Chats
           </button>

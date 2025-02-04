@@ -5,6 +5,7 @@ import { Sidebar } from '../../components/Dashboard/Sidebar/Sidebar';
 import { HomeView } from '../../components/Dashboard/Home/HomeView';
 import { AccountView } from '../../components/Dashboard/Account/AccountView';
 import { PortfolioView } from '../../components/Dashboard/Portfolio/PortfolioView';
+import { ChatInterface } from '@/components/Dashboard/Home/ChatInterface';
 
 function Dashboard() {
   const [isModelOpen, setIsModelOpen] = useState(false);
@@ -15,6 +16,18 @@ function Dashboard() {
 
   const renderMainContent = () => {
     switch (activeSection) {
+      case 'chat':
+        return (
+          <div className="h-screen">
+            <ChatInterface
+              initialMessage=""
+              selectedModel={selectedModel}
+              models={models}
+              onClose={() => setActiveSection('home')}
+              setSelectedModel={setSelectedModel}
+            />
+          </div>
+        );
       case 'account':
         return <AccountView />;
       case 'portfolio':
@@ -36,7 +49,7 @@ function Dashboard() {
     <div className="min-h-screen text-gray-200">
       <Sidebar activeSection={activeSection} setActiveSection={setActiveSection} />
       <div className="pl-64">
-        <div className="p-8 min-h-screen flex items-center justify-center">
+        <div className="h-screen">
           {renderMainContent()}
         </div>
       </div>
