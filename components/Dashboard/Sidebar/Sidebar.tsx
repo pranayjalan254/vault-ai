@@ -9,8 +9,8 @@ import {
   User,
   Briefcase,
 } from "lucide-react";
-import { LogoutButton } from "../LogoutButton";
-import { DelegateActionButton } from "../DelegateButton";
+import { LogoutButton } from "../Buttons/LogoutButton";
+import { DelegateActionButton } from "../Buttons/DelegateButton";
 
 interface SidebarProps {
   activeSection: string;
