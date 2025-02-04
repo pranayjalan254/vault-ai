@@ -2,7 +2,11 @@ import React, { useEffect, useState } from "react";
 import { useWallets, usePrivy, useUser } from "@privy-io/react-auth";
 import { Loader2, TrendingUp, TrendingDown, ArrowRight } from "lucide-react";
 import { ChainType, PortfolioResponse } from "../../../types/portfolio";
-import { fetchPortfolio, fetchAllChainPortfolio, SUPPORTED_CHAINS } from "../../../lib/api/portfolio";
+import {
+  fetchPortfolio,
+  fetchAllChainPortfolio,
+  SUPPORTED_CHAINS,
+} from "../../../lib/api/portfolio";
 import { Pie } from "react-chartjs-2";
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from "chart.js";
 import { FundWallet } from "../FundWallet/FundWallet";
@@ -18,7 +22,9 @@ export function PortfolioView() {
   const [portfolioData, setPortfolioData] = useState<PortfolioResponse | null>(
     null
   );
-  const [allChainData, setAllChainData] = useState<PortfolioResponse | null>(null);
+  const [allChainData, setAllChainData] = useState<PortfolioResponse | null>(
+    null
+  );
   const [isLoading, setIsLoading] = useState(false);
 
   const embeddedWallet = wallets.find(
@@ -33,7 +39,7 @@ export function PortfolioView() {
       try {
         const [chainData, allData] = await Promise.all([
           fetchPortfolio(embeddedWallet.address, selectedChain),
-          fetchAllChainPortfolio(embeddedWallet.address)
+          fetchAllChainPortfolio(embeddedWallet.address),
         ]);
         setPortfolioData(chainData);
         setAllChainData(allData);
@@ -78,14 +84,14 @@ export function PortfolioView() {
           usePointStyle: true,
           padding: 20,
           font: {
-            size: 12
-          }
+            size: 12,
+          },
         },
       },
     },
     responsive: true,
     maintainAspectRatio: false,
-    cutout: '65%',
+    cutout: "65%",
   };
 
   if (!ready || !embeddedWallet) return null;
@@ -113,7 +119,7 @@ export function PortfolioView() {
             value={selectedChain}
             onChange={(e) => setSelectedChain(e.target.value as ChainType)}
             className="bg-white/5 text-white border border-purple-800 rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 hover:border-purple-700 transition-colors"
-            >
+          >
             {SUPPORTED_CHAINS.map((chain) => (
               <option key={chain.id} value={chain.id} className="bg-gray-800">
                 {chain.name}
@@ -135,27 +141,41 @@ export function PortfolioView() {
           <div className="lg:col-span-2 bg-white/5 rounded-2xl p-6 backdrop-blur-sm border border-white/10">
             <div className="flex items-start justify-between mb-6">
               <div>
-                <h3 className="text-lg font-medium text-gray-400">Total Balance</h3>
-                <p className="text-4xl font-bold gradient-text mt-1">{portfolioData.totalValue}</p>
+                <h3 className="text-lg font-medium text-gray-400">
+                  Total Balance
+                </h3>
+                <p className="text-4xl font-bold gradient-text mt-1">
+                  {portfolioData.totalValue}
+                </p>
               </div>
             </div>
-            
+
             <div className="h-[300px]">
-              {pieChartData && <Pie data={pieChartData} options={chartOptions} />}
+              {pieChartData && (
+                <Pie data={pieChartData} options={chartOptions} />
+              )}
             </div>
           </div>
 
           {/* Chain-specific Asset Distribution */}
           <div className="bg-white/5 rounded-2xl p-6 backdrop-blur-sm border border-white/10">
             <h3 className="text-lg font-medium mb-4">
-              Asset Distribution on {SUPPORTED_CHAINS.find(c => c.id === selectedChain)?.name}
+              Asset Distribution on{" "}
+              {SUPPORTED_CHAINS.find((c) => c.id === selectedChain)?.name}
             </h3>
             <div className="space-y-4">
               {portfolioData.tokens.slice(0, 5).map((token, index) => (
-                <div key={index} className="flex items-center justify-between p-3 bg-white/5 rounded-xl hover:bg-white/10 transition-colors">
+                <div
+                  key={index}
+                  className="flex items-center justify-between p-3 bg-white/5 rounded-xl hover:bg-white/10 transition-colors"
+                >
                   <div className="flex items-center gap-3">
                     {token.logoUrl && (
-                      <img src={token.logoUrl} alt={token.symbol} className="w-8 h-8 rounded-full" />
+                      <img
+                        src={token.logoUrl}
+                        alt={token.symbol}
+                        className="w-8 h-8 rounded-full"
+                      />
                     )}
                     <div>
                       <p className="font-medium">{token.symbol}</p>
@@ -164,13 +184,18 @@ export function PortfolioView() {
                   </div>
                   <div className="text-right">
                     <p className="font-medium">{token.value}</p>
-                    <p className={`text-sm flex items-center gap-1 ${
-                      token.change24h.startsWith('+') ? 'text-green-400' : 'text-red-400'
-                    }`}>
-                      {token.change24h.startsWith('+') ? 
-                        <TrendingUp className="w-3 h-3" /> : 
+                    <p
+                      className={`text-sm flex items-center gap-1 ${
+                        token.change24h.startsWith("+")
+                          ? "text-green-400"
+                          : "text-red-400"
+                      }`}
+                    >
+                      {token.change24h.startsWith("+") ? (
+                        <TrendingUp className="w-3 h-3" />
+                      ) : (
                         <TrendingDown className="w-3 h-3" />
-                      }
+                      )}
                       {token.change24h}
                     </p>
                   </div>
@@ -187,7 +212,7 @@ export function PortfolioView() {
 
           {/* All Chain Assets */}
           <div className="lg:col-span-3 space-y-4">
-            <h3 className="text-lg font-medium">All Assets Across Chains</h3>
+            <h3 className="text-lg font-medium">All Assets</h3>
             <div className="grid gap-4">
               {allChainData.tokens.map((token, index) => (
                 <div
@@ -196,12 +221,18 @@ export function PortfolioView() {
                 >
                   <div className="flex items-center gap-4">
                     {token.logoUrl && (
-                      <img src={token.logoUrl} alt={token.symbol} className="w-10 h-10 rounded-full" />
+                      <img
+                        src={token.logoUrl}
+                        alt={token.symbol}
+                        className="w-10 h-10 rounded-full"
+                      />
                     )}
                     <div>
                       <div className="flex items-center gap-2">
                         <p className="font-medium">{token.token}</p>
-                        <span className="text-sm text-gray-500">{token.symbol}</span>
+                        <span className="text-sm text-gray-500">
+                          {token.symbol}
+                        </span>
                       </div>
                       <p className="text-sm text-gray-400">
                         {token.balance} {token.symbol}
@@ -210,13 +241,18 @@ export function PortfolioView() {
                   </div>
                   <div className="text-right">
                     <p className="font-medium">{token.value}</p>
-                    <p className={`text-sm flex items-center justify-end gap-1 ${
-                      token.change24h.startsWith('+') ? 'text-green-400' : 'text-red-400'
-                    }`}>
-                      {token.change24h.startsWith('+') ? 
-                        <TrendingUp className="w-3 h-3" /> : 
+                    <p
+                      className={`text-sm flex items-center justify-end gap-1 ${
+                        token.change24h.startsWith("+")
+                          ? "text-green-400"
+                          : "text-red-400"
+                      }`}
+                    >
+                      {token.change24h.startsWith("+") ? (
+                        <TrendingUp className="w-3 h-3" />
+                      ) : (
                         <TrendingDown className="w-3 h-3" />
-                      }
+                      )}
                       {token.change24h}
                     </p>
                   </div>
@@ -228,7 +264,9 @@ export function PortfolioView() {
       ) : (
         <div className="flex flex-col items-center justify-center h-[400px] text-gray-400">
           <p className="text-xl font-medium mb-2">No assets found</p>
-          <p className="text-sm">Connect a wallet or switch networks to view your portfolio</p>
+          <p className="text-sm">
+            Connect a wallet or switch networks to view your portfolio
+          </p>
         </div>
       )}
     </div>
