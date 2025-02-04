@@ -13,6 +13,8 @@ import {
   ChevronUp,
 } from "lucide-react";
 import { FaDiscord, FaGoogle, FaApple } from "react-icons/fa";
+import { LogoutButton } from "../Buttons/LogoutButton";
+import { ExternalWalletMenu } from './ExternalWalletMenu';
 
 export function AccountView() {
   const [copyStates, setCopyStates] = useState<{ [key: string]: boolean }>({});
@@ -137,17 +139,20 @@ export function AccountView() {
             Manage your connected accounts and services
           </p>
         </div>
-        <button
-          onClick={() => refreshUser()}
-          className="p-2 hover:bg-gray-800 rounded-full transition-colors"
-          title="Refresh connections"
-        >
-          <RefreshCw className="w-5 h-5" />
-        </button>
+          <div className="flex items-center gap-4">
+          <button
+            onClick={() => refreshUser()}
+            className="p-2 hover:bg-gray-800 rounded-full transition-colors"
+            title="Refresh connections"
+          >
+            <RefreshCw className="w-5 h-5" />
+          </button>
+          <LogoutButton />
+        </div>
       </div>
 
       {/* Wallets Section */}
-      <div className="bg-white/5 p-6 rounded-xl backdrop-blur-sm">
+      <div className="bg-white/5 p-6 rounded-xl backdrop-blur-sm relative z-50">
         <h3 className="text-lg font-medium mb-4">Wallet</h3>
         <div className="space-y-4">
           {/* Embedded Wallet */}
@@ -184,75 +189,11 @@ export function AccountView() {
           {/* External Wallets Dropdown */}
           {wallets.filter((w) => w.walletClientType !== "privy").length > 0 && (
             <div className="mt-4">
-              <button
-                onClick={() => setShowExternalWallets(!showExternalWallets)}
-                className="flex items-center gap-2 text-sm text-gray-400 hover:text-white transition-colors"
-              >
-                {showExternalWallets ? (
-                  <ChevronUp className="w-4 h-4" />
-                ) : (
-                  <ChevronDown className="w-4 h-4" />
-                )}
-                {showExternalWallets ? "Hide" : "Show"} External Wallets (
-                {wallets.filter((w) => w.walletClientType !== "privy").length})
-              </button>
-
-              {showExternalWallets && (
-                <div className="mt-2 space-y-2 bg-black/20 rounded-lg p-2">
-                  {/* Smart Wallet */}
-                  {smartWalletAddress && (
-                    <div className="flex items-center justify-between p-2 rounded-lg hover:bg-white/5 transition-colors">
-                      <div className="space-y-1">
-                        <p className="text-sm font-medium">
-                          {smartWalletAddress}
-                        </p>
-                        <p className="text-xs text-gray-400">Smart Wallet</p>
-                      </div>
-                      <button
-                        onClick={() => handleCopy(smartWalletAddress)}
-                        className="p-1.5 hover:bg-gray-700/50 rounded-lg transition-colors relative"
-                        title="Copy address"
-                      >
-                        {copyStates[smartWalletAddress] ? (
-                          <Check className="w-3.5 h-3.5 text-green-400" />
-                        ) : (
-                          <Copy className="w-3.5 h-3.5 text-gray-400" />
-                        )}
-                      </button>
-                    </div>
-                  )}
-
-                  {/* External Wallets */}
-                  {wallets
-                    .filter((wallet) => wallet.walletClientType !== "privy")
-                    .map((wallet) => (
-                      <div
-                        key={wallet.address}
-                        className="flex items-center justify-between p-2 rounded-lg hover:bg-white/5 transition-colors"
-                      >
-                        <div className="space-y-1">
-                          <p className="text-sm font-medium">
-                            {wallet.address}
-                          </p>
-                          <p className="text-xs text-gray-400">
-                            {formatWalletType(wallet.walletClientType)}
-                          </p>
-                        </div>
-                        <button
-                          onClick={() => handleCopy(wallet.address)}
-                          className="p-1.5 hover:bg-gray-700/50 rounded-lg transition-colors relative"
-                          title="Copy address"
-                        >
-                          {copyStates[wallet.address] ? (
-                            <Check className="w-3.5 h-3.5 text-green-400" />
-                          ) : (
-                            <Copy className="w-3.5 h-3.5 text-gray-400" />
-                          )}
-                        </button>
-                      </div>
-                    ))}
-                </div>
-              )}
+              <ExternalWalletMenu
+                wallets={wallets.filter((w) => w.walletClientType !== "privy")}
+                onCopy={handleCopy}
+                copyStates={copyStates}
+              />
             </div>
           )}
         </div>

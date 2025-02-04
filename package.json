@@ -10,6 +10,8 @@
   },
   "dependencies": {
     "@coinbase/onchainkit": "^0.36.9",
+    "@emotion/react": "^11.14.0",
+    "@emotion/styled": "^11.14.0",
     "@hookform/resolvers": "^3.9.0",
     "@next/swc-wasm-nodejs": "13.5.1",
     "@privy-io/react-auth": "^2.2.1",
@@ -41,7 +43,6 @@
     "@radix-ui/react-toggle-group": "^1.1.0",
     "@radix-ui/react-tooltip": "^1.1.2",
     "@types/node": "20.6.2",
-    "@types/react": "18.2.22",
     "@types/react-dom": "18.2.7",
     "autoprefixer": "10.4.15",
     "bigint-buffer": "^1.1.5",
@@ -78,5 +79,8 @@
     "vaul": "^0.9.9",
     "viem": "^2.22.21",
     "zod": "^3.23.8"
+  },
+  "devDependencies": {
+    "@types/react": "^18.3.18"
   }
 }
