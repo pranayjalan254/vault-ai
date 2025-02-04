@@ -40,7 +40,7 @@ export function HomeView({
           placeholder="Ask anything..."
           className="w-full bg-white/5 border border-gray-700 rounded-lg py-3 px-4 pr-32 focus:outline-none focus:border-purple-500 backdrop-blur-sm"
         />
-        <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-2">
+        <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-2 z-50">
           <ModelSelector
             selectedModel={selectedModel}
             isModelOpen={isModelOpen}

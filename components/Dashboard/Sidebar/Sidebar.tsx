@@ -9,6 +9,8 @@ import {
   User,
   Briefcase,
 } from "lucide-react";
+import { LogoutButton } from "../LogoutButton";
+import { DelegateActionButton } from "../DelegateButton";
 
 interface SidebarProps {
   activeSection: string;
@@ -68,6 +70,9 @@ export function Sidebar({ activeSection, setActiveSection }: SidebarProps) {
       </div>
 
       <div className="mt-auto">
+        <LogoutButton />
+        <DelegateActionButton />
+
         <div className="mt-4 space-y-2">
           <a
             href="#"

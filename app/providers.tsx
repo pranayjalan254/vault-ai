@@ -1,9 +1,18 @@
 "use client";
+"no-cors";
 
 import type { ReactNode } from "react";
 import { OnchainKitProvider } from "@coinbase/onchainkit";
-import { base } from "wagmi/chains";
 import { PrivyProvider } from "@privy-io/react-auth";
+import {
+  base,
+  mainnet,
+  baseSepolia,
+  sepolia,
+  polygon,
+  arbitrum,
+} from "viem/chains";
+import { SmartWalletsProvider } from "@privy-io/react-auth/smart-wallets";
 
 export function Providers(props: { children: ReactNode }) {
   return (
@@ -17,6 +26,7 @@ export function Providers(props: { children: ReactNode }) {
           showWalletLoginFirst: false,
           logo: "https://auth.privy.io/logos/privy-logo-dark.png",
           walletChainType: "ethereum-only",
+
           walletList: [
             "detected_wallets",
             "phantom",
@@ -25,6 +35,15 @@ export function Providers(props: { children: ReactNode }) {
             "okx_wallet",
           ],
         },
+        defaultChain: base,
+        supportedChains: [
+          mainnet,
+          sepolia,
+          base,
+          polygon,
+          baseSepolia,
+          arbitrum,
+        ],
         loginMethods: ["wallet", "google", "github", "twitter", "email"],
         fundingMethodConfig: {
           moonpay: {
@@ -47,12 +66,14 @@ export function Providers(props: { children: ReactNode }) {
         externalWallets: {},
       }}
     >
-      <OnchainKitProvider
-        apiKey={process.env.NEXT_PUBLIC_ONCHAINKIT_API_KEY}
-        chain={base}
-      >
-        {props.children}
-      </OnchainKitProvider>
+      <SmartWalletsProvider>
+        <OnchainKitProvider
+          apiKey={process.env.NEXT_PUBLIC_ONCHAINKIT_API_KEY}
+          chain={base}
+        >
+          {props.children}
+        </OnchainKitProvider>
+      </SmartWalletsProvider>
     </PrivyProvider>
   );
 }
