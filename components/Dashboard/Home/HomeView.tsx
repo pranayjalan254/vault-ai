@@ -44,19 +44,12 @@ export function HomeView({
   };
 
   return (
-    <div className="justify-center h-full my-[88px] relative">
-      <div
-        className={`transition-all duration-300 ${
-          showChat ? "opacity-0 scale-95" : "opacity-100 scale-100"
-        }`}
-      >
-        {!showChat ? (
-          <>
-            <div className="absolute top-6 right-6">
+    <div className="justify-center h-full my--[88px] relative">
+      <div className={`flex-1 transition-all duration-300 ${showChat ? "opacity-0 scale-95 h-0" : "opacity-100 scale-100"}`}>
+        <div className="absolute top-6 right-6">
               <LogoutButton />
             </div>
-            <div className="flex flex-col items-center justify-center h-full max-w-3xl mx-auto">
-              <Bee className="h-16 w-16 text-purple-400 mb-6" />
+            <div className="flex flex-col items-center justify-center h-full max-w-3xl mx-auto pt-16 pb-8">              <Bee className="h-16 w-16 text-purple-400 mb-6" />
               <h1 className="text-4xl font-semibold mb-2 gradient-text text-center">
                 Your AI-Powered DeFi Agent
               </h1>
@@ -112,18 +105,7 @@ export function HomeView({
                 />
               </div>
             </div>
-          </>
-        ) : (
-          <div className="h-full w-full">
-            <ChatInterface
-              initialMessage={inputValue}
-              selectedModel={selectedModel}
-              onClose={() => setShowChat(false)}
-              models={models}
-              setSelectedModel={setSelectedModel}
-            />
-          </div>
-        )}
+          
       </div>
       {showChat && (
         <ChatInterface

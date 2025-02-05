@@ -31,22 +31,20 @@ export function Sidebar({ activeSection, setActiveSection }: SidebarProps) {
         </div>
       </div>
 
+      {/* New Chat + Button */}
       <div className="mb-6">
-        <div className="flex items-center justify-between text-purple-400 mb-2">
-          <button
-            onClick={() => setActiveSection("chat")}
-            className={`hover:text-purple-300 transition-colors ${
-              activeSection === "chat" ? "text-purple-300" : ""
-            }`}
-          >
-            Chats
-          </button>
-          <button className="p-1 hover:bg-white/5 rounded transition-colors">
-            +
-          </button>
-        </div>
+        <button
+          onClick={() => setActiveSection("home")}
+          className={`w-full flex items-center justify-between text-purple-400 hover:text-purple-300 p-2 rounded-lg transition-colors ${
+            activeSection === "home" ? "bg-white/10" : ""
+          }`}
+        >
+          <span>New Chat</span>
+          <span>+</span>
+        </button>
       </div>
 
+      {/* Other Navigation Buttons */}
       <div className="space-y-2">
         <button
           onClick={() => setActiveSection("account")}
@@ -69,6 +67,7 @@ export function Sidebar({ activeSection, setActiveSection }: SidebarProps) {
         </button>
       </div>
 
+      {/* Footer Section */}
       <div className="mt-auto">
         <DelegateActionButton />
 

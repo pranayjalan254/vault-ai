@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import { ArrowRight, Loader2 } from "lucide-react";
+import { ArrowRight, Loader2, X, Beef } from "lucide-react";
 import { ModelSelector } from "./ModelSelector";
 
 interface ChatInterfaceProps {
@@ -32,7 +32,6 @@ export function ChatInterface({
   // Simulate AI response (replace with actual API call)
   const simulateAIResponse = async (userMessage: string) => {
     setIsLoading(true);
-    // Simulate a delay for the AI response
     await new Promise((resolve) => setTimeout(resolve, 1000));
     const aiMessage = {
       id: `ai-${Date.now()}`,
@@ -44,7 +43,6 @@ export function ChatInterface({
     setIsLoading(false);
   };
 
-  // Handle initial message
   useEffect(() => {
     if (initialMessage.trim()) {
       const userMessage = {
@@ -58,7 +56,6 @@ export function ChatInterface({
     }
   }, [initialMessage]);
 
-  // Scroll to bottom when new messages are added
   useEffect(() => {
     if (chatContainerRef.current) {
       chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight;
@@ -88,23 +85,37 @@ export function ChatInterface({
   };
 
   return (
-    <div className="h-full flex flex-col">
+    <div className="h-full flex flex-col bg-gray-900">
       {/* Chat Header */}
-      <div className="flex items-center justify-between p-4 border-b border-gray-700">
-        <h2 className="text-xl font-semibold">Chat with AI</h2>
+      <div className="flex items-center justify-between p-4 border-b border-gray-700 bg-gray-800">
+        <div className="flex items-center gap-3">
+          <div className="p-2 rounded-lg bg-purple-500/10">
+            <Beef className="h-6 w-6 text-purple-400" />
+          </div>
+          <h2 className="text-xl font-semibold">Vault AI Assistant</h2>
+        </div>
         <button
           onClick={onClose}
-          className="text-gray-400 hover:text-purple-400 transition-colors"
+          className="p-2 text-gray-400 hover:text-purple-400 transition-colors rounded-lg hover:bg-white/5"
         >
-          Close
+          <X className="h-5 w-5" />
         </button>
       </div>
 
-      {/* Chat Messages */}
+      {/* Chat Messages Area */}
       <div
         ref={chatContainerRef}
-        className="flex-1 overflow-y-auto p-4 space-y-4"
+        className="flex-1 overflow-y-auto p-4 space-y-4 min-h-[calc(100vh-180px)]"
       >
+        {messages.length === 0 && !isLoading && (
+          <div className="h-full flex flex-col items-center justify-center text-gray-400 gap-2">
+            <div className="p-3 rounded-full bg-gray-800">
+              <Beef className="h-8 w-8 text-purple-400" />
+            </div>
+            <p className="text-lg">How can I help you today?</p>
+          </div>
+        )}
+
         {messages.map((message) => (
           <div
             key={message.id}
@@ -113,43 +124,67 @@ export function ChatInterface({
             }`}
           >
             <div
-              className={`max-w-[70%] p-3 rounded-lg ${
+              className={`max-w-[85%] p-3 rounded-lg ${
                 message.isUser
                   ? "bg-purple-500 text-white"
-                  : "bg-gray-700 text-gray-100"
+                  : "bg-gray-800 text-gray-100"
               }`}
             >
-              <p>{message.text}</p>
-              <span className="text-xs text-gray-300 block mt-1">
-                {message.timestamp.toLocaleTimeString()}
-              </span>
+              <p className="text-sm">{message.text}</p>
+              <div className="flex items-center justify-end gap-2 mt-2">
+                <span className="text-xs text-gray-300">
+                  {message.timestamp.toLocaleTimeString([], {
+                    hour: '2-digit',
+                    minute: '2-digit'
+                  })}
+                </span>
+                {!message.isUser && (
+                  <span className="text-xs text-purple-400">
+                    {selectedModel}
+                  </span>
+                )}
+              </div>
             </div>
           </div>
         ))}
+
         {isLoading && (
           <div className="flex justify-start">
-            <div className="bg-gray-700 p-3 rounded-lg">
-              <Loader2 className="h-5 w-5 animate-spin text-purple-400" />
+            <div className="bg-gray-800 p-3 rounded-lg flex items-center gap-2">
+              <Loader2 className="h-4 w-4 animate-spin text-purple-400" />
+              <span className="text-sm text-gray-400">Thinking...</span>
             </div>
           </div>
         )}
       </div>
 
-      {/* Chat Input */}
-      <div className="p-4 border-t border-gray-700">
+      {/* Chat Input Area */}
+      <div className="p-4 border-t border-gray-700 bg-gray-800">
         <form onSubmit={handleSubmit} className="flex items-center gap-2">
-          <input
-            type="text"
-            value={inputValue}
-            onChange={(e) => setInputValue(e.target.value)}
-            onKeyDown={handleKeyDown}
-            placeholder="Type a message..."
-            className="flex-1 bg-white/5 border border-gray-700 rounded-lg py-2 px-4 focus:outline-none focus:border-purple-500 backdrop-blur-sm"
-          />
+          <div className="flex-1 relative">
+            <input
+              type="text"
+              value={inputValue}
+              onChange={(e) => setInputValue(e.target.value)}
+              onKeyDown={handleKeyDown}
+              placeholder="Type your message..."
+              className="w-full bg-gray-700 border border-gray-600 rounded-lg py-2 pl-4 pr-32 focus:outline-none focus:border-purple-500 placeholder-gray-400 text-sm"
+              disabled={isLoading}
+            />
+            <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-2">
+              <ModelSelector
+                selectedModel={selectedModel}
+                isModelOpen={false}
+                setIsModelOpen={() => {}}
+                setSelectedModel={setSelectedModel}
+                models={models}
+              />
+            </div>
+          </div>
           <button
             type="submit"
             disabled={isLoading}
-            className="p-2 text-gray-400 hover:text-purple-400 transition-colors"
+            className="p-2.5 text-white bg-purple-500 rounded-lg hover:bg-purple-600 transition-colors disabled:opacity-50"
           >
             <ArrowRight className="h-5 w-5" />
           </button>
