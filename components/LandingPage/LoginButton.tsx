@@ -1,11 +1,12 @@
 import { usePrivy } from "@privy-io/react-auth";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 
 export function LoginButton() {
   const router = useRouter();
   const { ready, authenticated, login } = usePrivy();
+  const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
     const handleLogin = () => {
@@ -20,8 +21,9 @@ export function LoginButton() {
     }
   }, [router]);
 
-  const handleClick = () => {
+  const handleClick = async () => {
     if (authenticated) {
+      setIsLoading(true);
       router.push("/dashboard");
     } else {
       login();
@@ -31,11 +33,20 @@ export function LoginButton() {
   return (
     <button
       className="px-8 py-4 rounded-lg bg-purple-600 hover:bg-purple-700 transition-all hover:scale-105 flex items-center justify-center gap-2"
-      disabled={!ready}
+      disabled={!ready || isLoading}
       onClick={handleClick}
     >
-      {authenticated ? "Go to Dashboard" : "Get Started"}
-      <ArrowRight className="w-5 h-5" />
+      {isLoading ? (
+        <>
+          <Loader2 className="w-5 h-5 animate-spin" />
+          Loading...
+        </>
+      ) : (
+        <>
+          {authenticated ? "Go to Dashboard" : "Get Started"}
+          <ArrowRight className="w-5 h-5" />
+        </>
+      )}
     </button>
   );
 }

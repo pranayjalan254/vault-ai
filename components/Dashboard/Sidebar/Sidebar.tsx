@@ -21,14 +21,7 @@ export function Sidebar({ activeSection, setActiveSection }: SidebarProps) {
       <div className="flex items-center gap-2 mb-8">
         <Bee className="h-6 w-6 text-purple-400" />
         <span className="text-xl font-semibold gradient-text">Vault AI</span>
-        <div className="ml-auto flex gap-2">
-          <button className="p-2 hover:bg-white/5 rounded-lg transition-colors">
-            <SunMedium className="h-5 w-5" />
-          </button>
-          <button className="p-2 hover:bg-white/5 rounded-lg transition-colors">
-            <MonitorDot className="h-5 w-5" />
-          </button>
-        </div>
+        <div className="ml-auto flex gap-2"></div>
       </div>
 
       {/* New Chat + Button */}

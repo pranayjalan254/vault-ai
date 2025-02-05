@@ -1,62 +1,100 @@
-import {
-  ChainType,
-  PortfolioResponse,
-  SupportedChain,
-} from "../../types/portfolio";
+import { ChainType, PortfolioResponse } from "../../types/portfolio";
 
 export const SUPPORTED_CHAINS = [
-  { id: "ethereum", name: "Ethereum" },
-  { id: "base", name: "Base" },
-  { id: "arbitrum", name: "Arbitrum" },
-  { id: "binance", name: "BNB Chain" },
-  { id: "polygon", name: "Polygon" },
+  { id: "1", name: "Ethereum", chainId: "1", logoUrl: "/eth-logo.png" },
+  { id: "8453", name: "Base", chainId: "8453", logoUrl: "/base-logo.png" },
+  { id: "42161", name: "Arbitrum", chainId: "42161", logoUrl: "/arb-logo.png" },
+  { id: "56", name: "BNB Chain", chainId: "56", logoUrl: "/bnb-logo.png" },
+  { id: "137", name: "Polygon", chainId: "137", logoUrl: "/polygon-logo.png" },
 ] as const;
 
-// Demo data for different chains
-const chainTokens = {
-  ethereum: [
-    { token: "Ethereum", symbol: "ETH", balance: "1.45", value: "$2,750.00", change24h: "+2.5%", logoUrl: "/eth-logo.png" },
-    { token: "USD Coin", symbol: "USDC", balance: "1000.00", value: "$1,000.00", change24h: "0%", logoUrl: "/usdc-logo.png" },
-  ],
-  base: [
-    { token: "Base", symbol: "BASE", balance: "100.00", value: "$150.00", change24h: "+5.2%", logoUrl: "/base-logo.png" },
-    { token: "Toshi", symbol: "TOSHI", balance: "5000.00", value: "$500.00", change24h: "-1.2%", logoUrl: "/toshi-logo.png" },
-  ],
-  arbitrum: [
-    { token: "Arbitrum", symbol: "ARB", balance: "200.00", value: "$300.00", change24h: "+3.1%", logoUrl: "/arb-logo.png" },
-    { token: "GMX", symbol: "GMX", balance: "10.00", value: "$450.00", change24h: "+7.8%", logoUrl: "/gmx-logo.png" },
-  ],
-  binance: [
-    { token: "BNB", symbol: "BNB", balance: "5.00", value: "$1,250.00", change24h: "+1.2%", logoUrl: "/bnb-logo.png" },
-    { token: "Pancake", symbol: "CAKE", balance: "100.00", value: "$150.00", change24h: "-2.3%", logoUrl: "/cake-logo.png" },
-  ],
-  polygon: [
-    { token: "Polygon", symbol: "MATIC", balance: "1000.00", value: "$850.00", change24h: "+4.5%", logoUrl: "/matic-logo.png" },
-    { token: "QuickSwap", symbol: "QUICK", balance: "2.00", value: "$100.00", change24h: "+0.8%", logoUrl: "/quick-logo.png" },
-  ],
-};
+export async function fetchPortfolio(
+  address: string,
+  chain: ChainType
+): Promise<PortfolioResponse> {
+  try {
+    const balanceResponse = await fetch(
+      `http://localhost:5173/bridge/getUserTokenBalances/${address}/${chain}`
+    );
+    const balanceData = await balanceResponse.json();
+    const changeResponse = await fetch(
+      `http://localhost:5173/bridge/getToken24hChange/${chain}`
+    );
+    const changeData = await changeResponse.json();
 
-export async function fetchPortfolio(address: string, chain: ChainType): Promise<PortfolioResponse> {
-  // Simulate API call delay
-  await new Promise(resolve => setTimeout(resolve, 1000));
-  
-  const tokens = chainTokens[chain];
-  const totalValue = tokens.reduce((sum, token) => 
-    sum + parseFloat(token.value.replace('$', '').replace(',', '')), 0);
+    const chainInfo = SUPPORTED_CHAINS.find((c) => c.id === chain);
 
-  return {
-    totalValue: `$${totalValue.toFixed(2)}`,
-    tokens,
-  };
+    const tokens = await Promise.all(
+      balanceData.change.map(async (token: any) => {
+        const priceResponse = await fetch(
+          `http://localhost:5173/bridge/getTokenPrice/${token.address}`
+        );
+        const priceData = await priceResponse.json();
+        const tokenChange = changeData.find(
+          (change: any) => change.name === token.token
+        );
+
+        const value = (
+          parseFloat(token.balance) * parseFloat(priceData.usdValue)
+        ).toFixed(2);
+
+        return {
+          token: token.token,
+          symbol: token.symbol || token.token,
+          balance: token.balance,
+          value: `$${value}`,
+          change24h: tokenChange
+            ? `${tokenChange.change24H.toFixed(2)}%`
+            : "0%",
+          logoUrl: token.logoUrl,
+          chainName: chainInfo?.name || "Unknown Chain",
+        };
+      })
+    );
+
+    const totalValue = tokens.reduce(
+      (sum, token) =>
+        sum + parseFloat(token.value.replace("$", "").replace(",", "")),
+      0
+    );
+
+    return {
+      totalValue: `$${totalValue.toFixed(2)}`,
+      tokens,
+    };
+  } catch (error) {
+    console.error("Error fetching portfolio:", error);
+    return {
+      totalValue: "$0.00",
+      tokens: [],
+    };
+  }
 }
 
 export async function fetchAllChainPortfolio(address: string) {
-  const allTokens = Object.values(chainTokens).flat();
-  const totalValue = allTokens.reduce((sum, token) => 
-    sum + parseFloat(token.value.replace('$', '').replace(',', '')), 0);
+  try {
+    const chainResponses = await Promise.all(
+      SUPPORTED_CHAINS.map((chain) =>
+        fetchPortfolio(address, chain.id as ChainType)
+      )
+    );
 
-  return {
-    totalValue: `$${totalValue.toFixed(2)}`,
-    tokens: allTokens,
-  };
+    const allTokens = chainResponses.flatMap((response) => response.tokens);
+    const totalValue = allTokens.reduce(
+      (sum, token) =>
+        sum + parseFloat(token.value.replace("$", "").replace(",", "")),
+      0
+    );
+
+    return {
+      totalValue: `$${totalValue.toFixed(2)}`,
+      tokens: allTokens,
+    };
+  } catch (error) {
+    console.error("Error fetching all chain portfolio:", error);
+    return {
+      totalValue: "$0.00",
+      tokens: [],
+    };
+  }
 }
