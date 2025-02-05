@@ -10,6 +10,7 @@ import { ModelSelector } from "./ModelSelector";
 import { ActionCard } from "./ActionCard";
 import { LogoutButton } from "../Buttons/LogoutButton";
 import { ChatInterface } from "./ChatInterface"; // New component to be created
+import { NotificationButton } from '../Buttons/NotificationButton';
 
 interface HomeViewProps {
   selectedModel: string;
