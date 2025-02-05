@@ -1,5 +1,5 @@
-import React from 'react';
-import { ChevronDown } from 'lucide-react';
+import React from "react";
+import { ChevronDown } from "lucide-react";
 
 interface ModelSelectorProps {
   selectedModel: string;
@@ -7,9 +7,17 @@ interface ModelSelectorProps {
   setIsModelOpen: (isOpen: boolean) => void;
   setSelectedModel: (model: string) => void;
   models: string[];
+  direction?: "up" | "down";
 }
 
-export function ModelSelector({ selectedModel, isModelOpen, setIsModelOpen, setSelectedModel, models }: ModelSelectorProps) {
+export function ModelSelector({
+  selectedModel,
+  isModelOpen,
+  setIsModelOpen,
+  setSelectedModel,
+  models,
+  direction = "down", // Default to downward
+}: ModelSelectorProps) {
   return (
     <div className="relative">
       <button
@@ -20,9 +28,13 @@ export function ModelSelector({ selectedModel, isModelOpen, setIsModelOpen, setS
         {selectedModel}
         <ChevronDown className="h-4 w-4" />
       </button>
-      
+
       {isModelOpen && (
-        <div className="absolute right-0 mt-1 w-36 bg-gray-800/90 border border-gray-700 rounded-lg shadow-lg py-1 backdrop-blur-sm z-50">
+        <div
+          className={`absolute ${
+            direction === "up" ? "bottom-full mb-1" : "top-full mt-1"
+          } right-0 w-36 bg-black/50 backdrop-blur-lg border border-white/10 rounded-lg shadow-lg py-1 z-50`}
+        >
           {models.map((model) => (
             <button
               key={model}

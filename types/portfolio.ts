@@ -1,4 +1,4 @@
-export type ChainType = "ethereum" | "base" | "arbitrum" | "binance" | "polygon";
+export type ChainType = "1" | "8453" | "42161" | "56" | "137";
 
 export interface TokenData {
   token: string;
@@ -18,4 +18,5 @@ export interface SupportedChain {
   id: ChainType;
   name: string;
   logoUrl: string;
+  chainId: string;
 }

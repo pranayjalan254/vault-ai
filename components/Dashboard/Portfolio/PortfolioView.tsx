@@ -18,7 +18,7 @@ export function PortfolioView() {
   const { wallets } = useWallets();
   const { ready, authenticated } = usePrivy();
   const { user } = useUser();
-  const [selectedChain, setSelectedChain] = useState<ChainType>("ethereum");
+  const [selectedChain, setSelectedChain] = useState<ChainType>("1");
   const [portfolioData, setPortfolioData] = useState<PortfolioResponse | null>(
     null
   );
@@ -38,8 +38,11 @@ export function PortfolioView() {
       setIsLoading(true);
       try {
         const [chainData, allData] = await Promise.all([
-          fetchPortfolio(embeddedWallet.address, selectedChain),
-          fetchAllChainPortfolio(embeddedWallet.address),
+          fetchPortfolio(
+            "0x00ce496A3aE288Fec2BA5b73039DB4f7c31a9144",
+            selectedChain
+          ),
+          fetchAllChainPortfolio("0x00ce496A3aE288Fec2BA5b73039DB4f7c31a9144"),
         ]);
         setPortfolioData(chainData);
         setAllChainData(allData);
