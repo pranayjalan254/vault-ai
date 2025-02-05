@@ -11,6 +11,7 @@ import { Pie } from "react-chartjs-2";
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from "chart.js";
 import { FundWallet } from "../FundWallet/FundWallet";
 import { LogoutButton } from "../Buttons/LogoutButton";
+import { NotificationButton } from '../Buttons/NotificationButton';
 
 ChartJS.register(ArcElement, Tooltip, Legend);
 
@@ -112,6 +113,7 @@ export function PortfolioView() {
           <p className="text-gray-400">Track your assets across chains</p>
         </div>
         <div className="flex items-center gap-4">
+          <NotificationButton />
           <select
             value={selectedChain}
             onChange={(e) => setSelectedChain(e.target.value as ChainType)}

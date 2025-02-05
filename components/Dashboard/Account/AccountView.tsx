@@ -15,6 +15,7 @@ import {
 import { FaDiscord, FaGoogle, FaApple } from "react-icons/fa";
 import { LogoutButton } from "../Buttons/LogoutButton";
 import { ExternalWalletMenu } from './ExternalWalletMenu';
+import { NotificationButton } from '../Buttons/NotificationButton';
 
 export function AccountView() {
   const [copyStates, setCopyStates] = useState<{ [key: string]: boolean }>({});
@@ -130,7 +131,7 @@ export function AccountView() {
   ];
 
   return (
-    <div className="w-full max-w-4xl space-y-8 animate-fadeIn">
+    <div className="mx-11 my-11 w-full max-w-4xl space-y-8 animate-fadeIn">
       {/* Header */}
       <div className="flex justify-between items-center">
         <div>
@@ -140,6 +141,7 @@ export function AccountView() {
           </p>
         </div>
           <div className="flex items-center gap-4">
+          <NotificationButton />
           <button
             onClick={() => refreshUser()}
             className="p-2 hover:bg-gray-800 rounded-full transition-colors"

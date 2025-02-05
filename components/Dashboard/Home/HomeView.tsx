@@ -10,6 +10,7 @@ import { ModelSelector } from "./ModelSelector";
 import { ActionCard } from "./ActionCard";
 import { LogoutButton } from "../Buttons/LogoutButton";
 import { ChatInterface } from "./ChatInterface"; // New component to be created
+import { NotificationButton } from '../Buttons/NotificationButton';
 
 interface HomeViewProps {
   selectedModel: string;
@@ -46,9 +47,10 @@ export function HomeView({
   return (
     <div className="justify-center h-full my--[88px] relative">
       <div className={`flex-1 transition-all duration-300 ${showChat ? "opacity-0 scale-95 h-0" : "opacity-100 scale-100"}`}>
-        <div className="absolute top-6 right-6">
-              <LogoutButton />
-            </div>
+        <div className="absolute top-6 right-6 flex items-center gap-4">
+          <NotificationButton />
+          <LogoutButton />
+        </div>
             <div className="flex flex-col items-center justify-center h-full max-w-3xl mx-auto pt-16 pb-8">              <Bee className="h-16 w-16 text-purple-400 mb-6" />
               <h1 className="text-4xl font-semibold mb-2 gradient-text text-center">
                 Your AI-Powered DeFi Agent
