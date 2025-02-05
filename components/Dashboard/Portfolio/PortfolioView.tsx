@@ -230,8 +230,9 @@ export function PortfolioView() {
                     <div>
                       <div className="flex items-center gap-2">
                         <p className="font-medium">{token.token}</p>
-                        <span className="text-sm text-gray-500">
-                          {token.symbol}
+
+                        <span className="text-xs px-2 py-1 bg-purple-500/20 text-purple-300 rounded-full">
+                          {token.chainName}
                         </span>
                       </div>
                       <p className="text-sm text-gray-400">
@@ -243,12 +244,14 @@ export function PortfolioView() {
                     <p className="font-medium">{token.value}</p>
                     <p
                       className={`text-sm flex items-center justify-end gap-1 ${
-                        token.change24h.startsWith("+")
+                        parseFloat(token.change24h) > 0
                           ? "text-green-400"
-                          : "text-red-400"
+                          : parseFloat(token.change24h) < 0
+                          ? "text-red-400"
+                          : "text-gray-400"
                       }`}
                     >
-                      {token.change24h.startsWith("+") ? (
+                      {parseFloat(token.change24h) > 0 ? (
                         <TrendingUp className="w-3 h-3" />
                       ) : (
                         <TrendingDown className="w-3 h-3" />

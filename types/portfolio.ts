@@ -7,6 +7,7 @@ export interface TokenData {
   value: string;
   change24h: string;
   logoUrl?: string;
+  chainName: string;
 }
 
 export interface PortfolioResponse {

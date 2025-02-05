@@ -21,6 +21,9 @@ export async function fetchPortfolio(
       `http://localhost:5173/bridge/getToken24hChange/${chain}`
     );
     const changeData = await changeResponse.json();
+
+    const chainInfo = SUPPORTED_CHAINS.find((c) => c.id === chain);
+
     const tokens = await Promise.all(
       balanceData.change.map(async (token: any) => {
         const priceResponse = await fetch(
@@ -44,6 +47,7 @@ export async function fetchPortfolio(
             ? `${tokenChange.change24H.toFixed(2)}%`
             : "0%",
           logoUrl: token.logoUrl,
+          chainName: chainInfo?.name || "Unknown Chain",
         };
       })
     );
