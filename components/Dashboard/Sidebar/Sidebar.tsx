@@ -30,8 +30,7 @@ export function Sidebar({ activeSection, setActiveSection }: SidebarProps) {
           onClick={() => setActiveSection("home")}
           className="w-full flex items-center justify-between text-purple-400 hover:text-purple-300 p-2 rounded-lg transition-all duration-300 hover:bg-purple-500/10 card-hover"
         >
-          <span>New Chat</span>
-          <span>+</span>
+          <span>Chats</span>
         </button>
       </div>
 

@@ -32,6 +32,7 @@ export function HomeView({
 }: HomeViewProps) {
   const [inputValue, setInputValue] = useState("");
   const [showChat, setShowChat] = useState(false);
+  const [chatKey, setChatKey] = useState(0); // Add this new state
   const { isListening, startListening } = useSpeechToText();
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -51,6 +52,11 @@ export function HomeView({
 
   const handleSpeechInput = (text: string) => {
     setInputValue(text);
+  };
+
+  const handleNewChat = () => {
+    setChatKey(prev => prev + 1); // Increment key to force new chat instance
+    setInputValue("");
   };
 
   return (
@@ -139,11 +145,13 @@ export function HomeView({
       {showChat && (
         <div className="animate-fadeIn">
           <ChatInterface
+            key={chatKey}
             initialMessage={inputValue}
             selectedModel={selectedModel}
             onClose={() => setShowChat(false)}
             models={models}
             setSelectedModel={setSelectedModel}
+            onNewChat={handleNewChat}
           />
         </div>
       )}

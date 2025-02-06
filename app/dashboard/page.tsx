@@ -24,8 +24,9 @@ function Dashboard() {
               selectedModel={selectedModel}
               models={models}
               onClose={() => setActiveSection('home')}
-              setSelectedModel={setSelectedModel}
-            />
+              setSelectedModel={setSelectedModel} onNewChat={function (): void {
+                throw new Error('Function not implemented.');
+              } }            />
           </div>
         );
       case 'account':
