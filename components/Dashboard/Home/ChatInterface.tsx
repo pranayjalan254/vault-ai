@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
-import { ArrowRight, Loader2, X, Beef } from "lucide-react";
+import { ArrowRight, Loader2, X, Beef, Mic } from "lucide-react";
 import { ModelSelector } from "./ModelSelector";
+import { useSpeechToText } from '../../../hooks/useSpeechToText';
 
 interface ChatInterfaceProps {
   initialMessage: string;
@@ -29,6 +30,7 @@ export function ChatInterface({
   const [isLoading, setIsLoading] = useState(false);
   const [isModelOpen, setIsModelOpen] = useState(false); // Add this state
   const chatContainerRef = useRef<HTMLDivElement>(null);
+  const { isListening, startListening } = useSpeechToText();
 
   // Simulate AI response (replace with actual API call)
   const simulateAIResponse = async (userMessage: string) => {
@@ -90,6 +92,10 @@ export function ChatInterface({
   const handleModelSelect = (model: string) => {
     setSelectedModel(model);
     setIsModelOpen(false);
+  };
+
+  const handleSpeechInput = (text: string) => {
+    setInputValue(text);
   };
 
   return (
@@ -172,11 +178,27 @@ export function ChatInterface({
               value={inputValue}
               onChange={(e) => setInputValue(e.target.value)}
               onKeyDown={handleKeyDown}
-              placeholder="Type your message..."
-              className="w-full bg-white/5 border border-white/10 rounded-lg py-2 pl-4 pr-32 focus:outline-none focus:border-purple-500 placeholder-gray-500 text-sm backdrop-blur-sm text-white"
-              disabled={isLoading}
+              placeholder={isListening ? "Listening..." : "Type your message..."}
+              className="w-full bg-white/5 border border-white/10 rounded-lg py-2 pl-4 pr-40 focus:outline-none focus:border-purple-500 placeholder-gray-500 text-sm backdrop-blur-sm text-white"
+              disabled={isLoading || isListening}
             />
             <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => startListening(handleSpeechInput)}
+                className={`p-2 rounded-lg transition-all ${
+                  isListening 
+                    ? 'bg-purple-500/20 text-purple-400 animate-pulse' 
+                    : 'text-gray-400 hover:text-purple-400'
+                }`}
+                disabled={isLoading}
+              >
+                {isListening ? (
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                ) : (
+                  <Mic className="w-4 h-4" />
+                )}
+              </button>
               <ModelSelector
                 selectedModel={selectedModel}
                 isModelOpen={isModelOpen}

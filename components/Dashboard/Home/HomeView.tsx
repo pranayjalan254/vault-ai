@@ -5,12 +5,15 @@ import {
   Wallet2,
   BookOpen,
   ArrowRight,
+  Mic,
+  Loader2,
 } from "lucide-react";
 import { ModelSelector } from "./ModelSelector";
 import { ActionCard } from "./ActionCard";
 import { LogoutButton } from "../Buttons/LogoutButton";
 import { ChatInterface } from "./ChatInterface"; // New component to be created
 import { NotificationButton } from '../Buttons/NotificationButton';
+import { useSpeechToText } from '../../../hooks/useSpeechToText';
 
 interface HomeViewProps {
   selectedModel: string;
@@ -29,6 +32,7 @@ export function HomeView({
 }: HomeViewProps) {
   const [inputValue, setInputValue] = useState("");
   const [showChat, setShowChat] = useState(false);
+  const { isListening, startListening } = useSpeechToText();
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -43,6 +47,10 @@ export function HomeView({
       e.preventDefault();
       handleSubmit(e);
     }
+  };
+
+  const handleSpeechInput = (text: string) => {
+    setInputValue(text);
   };
 
   return (
@@ -71,10 +79,25 @@ export function HomeView({
                 value={inputValue}
                 onChange={(e) => setInputValue(e.target.value)}
                 onKeyDown={handleKeyDown}
-                placeholder="Ask anything..."
-                className="w-full bg-white/5 border border-gray-700 rounded-lg py-3 px-4 pr-32 focus:outline-none focus:border-purple-500 backdrop-blur-sm"
+                placeholder={isListening ? "Listening..." : "Ask anything..."}
+                className="w-full bg-white/5 border border-gray-700 rounded-lg py-3 px-4 pr-40 focus:outline-none focus:border-purple-500 backdrop-blur-sm"
               />
               <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-2 z-50">
+                <button
+                  type="button"
+                  onClick={() => startListening(handleSpeechInput)}
+                  className={`p-2 rounded-lg transition-all ${
+                    isListening 
+                      ? 'bg-purple-500/20 text-purple-400 animate-pulse' 
+                      : 'text-gray-400 hover:text-purple-400'
+                  }`}
+                >
+                  {isListening ? (
+                    <Loader2 className="w-5 h-5 animate-spin" />
+                  ) : (
+                    <Mic className="w-5 h-5" />
+                  )}
+                </button>
                 <ModelSelector
                   selectedModel={selectedModel}
                   isModelOpen={isModelOpen}
