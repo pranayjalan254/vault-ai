@@ -46,18 +46,18 @@ export function HomeView({
   };
 
   return (
-    <div className="justify-center h-full my--[88px] relative">
+    <div className="justify-center h-full relative gradient-bg">
       <div
-        className={`flex-1 transition-all duration-300 ${
+        className={`flex-1 transition-all duration-500 ${
           showChat ? "opacity-0 scale-95 h-0" : "opacity-100 scale-100"
         }`}
       >
-        <div className="absolute top-6 right-6">
+        <div className="absolute top-6 right-6 flex items-center gap-4 animate-fadeIn">
+          <NotificationButton />
           <LogoutButton />
         </div>
-        <div className="flex flex-col items-center justify-center h-full max-w-3xl mx-auto pt-16 pb-8">
-          {" "}
-          <Bee className="h-16 w-16 text-purple-400 mb-6" />
+        <div className="flex flex-col items-center justify-center h-full max-w-3xl mx-auto pt-16 pb-8 animate-slideUp">
+          <Bee className="h-16 w-16 text-purple-400 mb-6 animate-pulse-slow" />
           <h1 className="text-4xl font-semibold mb-2 gradient-text text-center">
             Your AI-Powered DeFi Agent
           </h1>
@@ -65,7 +65,7 @@ export function HomeView({
             Manage your crypto portfolio, stake, swap and more with Vault AI
           </p>
           <div className="w-full max-w-xl mb-8 relative">
-            <form onSubmit={handleSubmit}>
+            <form onSubmit={handleSubmit} className="glass-effect rounded-lg p-1">
               <input
                 type="text"
                 value={inputValue}
@@ -114,13 +114,15 @@ export function HomeView({
         </div>
       </div>
       {showChat && (
-        <ChatInterface
-          initialMessage={inputValue}
-          selectedModel={selectedModel}
-          onClose={() => setShowChat(false)}
-          models={models}
-          setSelectedModel={setSelectedModel}
-        />
+        <div className="animate-fadeIn">
+          <ChatInterface
+            initialMessage={inputValue}
+            selectedModel={selectedModel}
+            onClose={() => setShowChat(false)}
+            models={models}
+            setSelectedModel={setSelectedModel}
+          />
+        </div>
       )}
     </div>
   );

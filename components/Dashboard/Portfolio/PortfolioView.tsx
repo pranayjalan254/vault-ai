@@ -12,6 +12,7 @@ import { Chart as ChartJS, ArcElement, Tooltip, Legend } from "chart.js";
 import { FundWallet } from "../FundWallet/FundWallet";
 import { LogoutButton } from "../Buttons/LogoutButton";
 import { NotificationButton } from '../Buttons/NotificationButton';
+import { PortfolioLoadingSkeleton } from './LoadingSkeleton';
 
 ChartJS.register(ArcElement, Tooltip, Legend);
 
@@ -98,7 +99,9 @@ export function PortfolioView() {
     cutout: "65%",
   };
 
-  if (!ready || !embeddedWallet) return null;
+  if (!ready || !embeddedWallet) {
+    return <PortfolioLoadingSkeleton />;
+  }
 
   if (!authenticated || !user) {
     return (
@@ -109,7 +112,7 @@ export function PortfolioView() {
   }
 
   return (
-    <div className="w-full max-w-6xl mx-auto p-6 space-y-6">
+    <div className="w-full max-w-6xl mx-auto p-6 space-y-6 animate-fadeIn">
       <div className="flex justify-between items-start">
         <div>
           <h2 className="text-3xl font-bold mb-2">Portfolio</h2>
@@ -134,13 +137,11 @@ export function PortfolioView() {
       </div>
 
       {isLoading ? (
-        <div className="flex items-center justify-center h-[400px]">
-          <Loader2 className="w-8 h-8 animate-spin text-purple-500" />
-        </div>
+          <PortfolioLoadingSkeleton />
       ) : portfolioData && allChainData ? (
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 animate-slideUp">
           {/* Chain-specific Portfolio Card */}
-          <div className="lg:col-span-2 bg-white/5 rounded-2xl p-6 backdrop-blur-sm border border-white/10">
+          <div className="lg:col-span-2 glass-effect rounded-2xl p-6 card-hover">
             <div className="flex items-start justify-between mb-6">
               <div>
                 <h3 className="text-lg font-medium text-gray-400">
@@ -160,7 +161,7 @@ export function PortfolioView() {
           </div>
 
           {/* Chain-specific Asset Distribution */}
-          <div className="bg-white/5 rounded-2xl p-6 backdrop-blur-sm border border-white/10">
+          <div className="glass-effect rounded-2xl p-6 card-hover">
             <h3 className="text-lg font-medium mb-4">
               Asset Distribution on{" "}
               {SUPPORTED_CHAINS.find((c) => c.id === selectedChain)?.name}
@@ -267,7 +268,7 @@ export function PortfolioView() {
           </div>
         </div>
       ) : (
-        <div className="flex flex-col items-center justify-center h-[400px] text-gray-400">
+        <div className="glass-effect rounded-2xl p-8 text-center animate-fadeIn">
           <p className="text-xl font-medium mb-2">No assets found</p>
           <p className="text-sm">
             Connect a wallet or switch networks to view your portfolio

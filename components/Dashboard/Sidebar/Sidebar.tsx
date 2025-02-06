@@ -17,20 +17,18 @@ interface SidebarProps {
 
 export function Sidebar({ activeSection, setActiveSection }: SidebarProps) {
   return (
-    <div className="fixed left-0 top-0 h-full w-64 border-r border-gray-800/50 p-4 flex flex-col backdrop-blur-sm bg-black/20">
-      <div className="flex items-center gap-2 mb-8">
+    <div className="fixed left-0 top-0 h-full w-64 sidebar-gradient backdrop-blur-xl border-r border-gray-800/50 p-4 flex flex-col animate-fadeIn">
+      <div className="flex items-center gap-2 mb-8 hover:scale-105 transition-transform">
         <Bee className="h-6 w-6 text-purple-400" />
         <span className="text-xl font-semibold gradient-text">Vault AI</span>
         <div className="ml-auto flex gap-2"></div>
       </div>
 
-      {/* New Chat + Button */}
+      {/* Enhanced button styles */}
       <div className="mb-6">
         <button
           onClick={() => setActiveSection("home")}
-          className={`w-full flex items-center justify-between text-purple-400 hover:text-purple-300 p-2 rounded-lg transition-colors ${
-            activeSection === "home" ? "bg-white/10" : ""
-          }`}
+          className="w-full flex items-center justify-between text-purple-400 hover:text-purple-300 p-2 rounded-lg transition-all duration-300 hover:bg-purple-500/10 card-hover"
         >
           <span>New Chat</span>
           <span>+</span>
