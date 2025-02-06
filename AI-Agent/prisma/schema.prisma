@@ -1,0 +1,40 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+  previewFeatures = ["fullTextSearchPostgres"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = "postgresql://postgres.bkrlwepxjvdsciviexhe:vasnaq-7fawPi-myhcos@aws-0-ap-south-1.pooler.supabase.com:6543/postgres"
+}
+
+model Token {
+  id                  Int      @id @default(autoincrement())
+  createdAt           DateTime @default(now())
+  address             String
+  tokenLogo           String
+  tokenName           String
+  decimal             Int
+  chainId             Int
+  feeTier             Int
+  pythId              String?
+  geckoTerminalAddress String
+  isNative            Boolean
+  isStable            Boolean
+  chain               Chain    @relation(fields: [chainId], references: [chainId])
+}
+
+model Chain {
+  id                  Int      @id @default(autoincrement())
+  name                String
+  chainId             Int      @unique
+  createdAt           DateTime @default(now())
+  chainLogo           String
+  tokens              Token[]  
+}
