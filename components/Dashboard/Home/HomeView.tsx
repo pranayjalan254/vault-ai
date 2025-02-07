@@ -61,6 +61,11 @@ export function HomeView({
     setInputValue("");
   };
 
+  const handleNewChat = () => {
+    setChatKey((prev) => prev + 1); // Increment key to force new chat instance
+    setInputValue("");
+  };
+
   return (
     <div className="justify-center h-full relative gradient-bg">
       <div
