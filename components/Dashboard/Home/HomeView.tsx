@@ -1,3 +1,5 @@
+'use client';
+
 import React, { useState } from "react";
 import {
   Beef as Bee,
@@ -60,7 +62,7 @@ export function HomeView({
   };
 
   return (
-    <div className="justify-center h-full relative gradient-bg">
+    <div className="flex flex-col justify-center h-full relative gradient-bg">
       <div
         className={`flex-1 transition-all duration-500 ${
           showChat ? "opacity-0 scale-95 h-0" : "opacity-100 scale-100"
@@ -72,10 +74,10 @@ export function HomeView({
         </div>
         <div className="flex flex-col items-center justify-center h-full max-w-3xl mx-auto pt-16 pb-8 animate-slideUp">
           <Bee className="h-16 w-16 text-purple-400 mb-6 animate-pulse-slow" />
-          <h1 className="text-4xl font-semibold mb-2 gradient-text text-center">
+          <h1 className="text-4xl font-semibold mb-2 z-50 gradient-text text-center">
             Your AI-Powered DeFi Agent
           </h1>
-          <p className="text-gray-400 mb-8 text-lg text-center">
+          <p className="text-gray-400 mb-8 text-lg z-0 text-center">
             Manage your crypto portfolio, stake, swap and more with Vault AI
           </p>
           <div className="w-full max-w-xl mb-8 relative">

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import { ArrowRight, Loader2, X, Beef, Mic } from "lucide-react";
+import { ArrowRight, Loader2, X, Beef, Mic, ArrowDown } from "lucide-react";
 import { ModelSelector } from "./ModelSelector";
 import { useSpeechToText } from '../../../hooks/useSpeechToText';
 
@@ -31,7 +31,10 @@ export function ChatInterface({
   const [inputValue, setInputValue] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [isModelOpen, setIsModelOpen] = useState(false); // Add this state
+  const [showScrollButton, setShowScrollButton] = useState(false);
   const chatContainerRef = useRef<HTMLDivElement>(null);
+  const lastMessageRef = useRef<HTMLDivElement>(null);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
   const { isListening, startListening } = useSpeechToText();
 
   // Simulate AI response (replace with actual API call)
@@ -106,6 +109,36 @@ export function ChatInterface({
     onNewChat();
   };
 
+  // Add scroll handler to show/hide scroll button
+  const handleScroll = () => {
+    if (!chatContainerRef.current) return;
+    
+    const { scrollTop, scrollHeight, clientHeight } = chatContainerRef.current;
+    const isNearBottom = scrollHeight - scrollTop - clientHeight < 100;
+    setShowScrollButton(!isNearBottom);
+  };
+
+  // Scroll to bottom smoothly
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  };
+
+  // Auto scroll to bottom on new messages
+  useEffect(() => {
+    if (messages.length > 0) {
+      lastMessageRef.current?.scrollIntoView({ behavior: 'smooth' });
+    }
+  }, [messages]);
+
+  // Add scroll event listener
+  useEffect(() => {
+    const chatContainer = chatContainerRef.current;
+    if (chatContainer) {
+      chatContainer.addEventListener('scroll', handleScroll);
+      return () => chatContainer.removeEventListener('scroll', handleScroll);
+    }
+  }, []);
+
   return (
     <div className="h-full flex flex-col bg-black/20 backdrop-blur-lg">
       {/* Chat Header */}
@@ -137,7 +170,8 @@ export function ChatInterface({
       {/* Chat Messages Area */}
       <div
         ref={chatContainerRef}
-        className="flex-1 overflow-y-auto p-4 space-y-4 min-h-[calc(100vh-180px)]"
+        className="flex-1 overflow-y-auto p-4 space-y-4 min-h-[calc(100vh-180px)] scroll-smooth"
+        style={{ maxHeight: 'calc(100vh - 140px)' }}
       >
         {messages.length === 0 && !isLoading && (
           <div className="h-full flex flex-col items-center justify-center text-gray-400 gap-2">
@@ -148,12 +182,13 @@ export function ChatInterface({
           </div>
         )}
 
-        {messages.map((message) => (
+        {messages.map((message, index) => (
           <div
             key={message.id}
-            className={`flex ${
-              message.isUser ? "justify-end" : "justify-start"
-            }`}
+            ref={index === messages.length - 1 ? lastMessageRef : null}
+            className={`flex ${message.isUser ? "justify-end" : "justify-start"} 
+              opacity-0 animate-fadeIn`}
+            style={{ animationDelay: `${index * 50}ms`, animationFillMode: 'forwards' }}
           >
             <div
               className={`max-w-[85%] p-3 rounded-lg ${
@@ -176,12 +211,26 @@ export function ChatInterface({
         ))}
 
         {isLoading && (
-          <div className="flex justify-start">
+          <div className="flex justify-start animate-fadeIn">
             <div className="bg-white/5 backdrop-blur-sm p-3 rounded-lg flex items-center gap-2 border border-white/10">
               <Loader2 className="h-4 w-4 animate-spin text-purple-400" />
               <span className="text-sm text-gray-400">Thinking...</span>
             </div>
           </div>
+        )}
+        <div ref={messagesEndRef} />
+        {/* Scroll to bottom button */}
+        {showScrollButton && (
+          <button
+            onClick={scrollToBottom}
+            className="fixed bottom-24 right-6 p-2 rounded-full bg-purple-500/80 
+              text-white hover:bg-purple-600 transition-all duration-300 
+              shadow-lg border border-purple-400/20 backdrop-blur-sm
+              animate-fadeIn z-10"
+            aria-label="Scroll to bottom"
+          >
+            <ArrowDown className="w-5 h-5" />
+          </button>
         )}
       </div>
 

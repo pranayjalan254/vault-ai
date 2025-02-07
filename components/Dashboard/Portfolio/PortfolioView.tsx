@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useWallets, usePrivy, useUser } from "@privy-io/react-auth";
-import { Loader2, TrendingUp, TrendingDown, ArrowRight } from "lucide-react";
+import { Loader2, TrendingUp, TrendingDown, ArrowRight, ChevronDown, ChevronUp } from "lucide-react";
 import { ChainType, PortfolioResponse } from "../../../types/portfolio";
 import {
   fetchPortfolio,
@@ -16,6 +16,20 @@ import { PortfolioLoadingSkeleton } from './LoadingSkeleton';
 
 ChartJS.register(ArcElement, Tooltip, Legend);
 
+interface GroupedToken {
+  symbol: string;
+  token: string;
+  logoUrl: string;
+  totalValue: string;
+  totalTokens: string;
+  instances: {
+    chainName: string;
+    balance: string;
+    value: string;
+    change24h: string;
+  }[];
+}
+
 export function PortfolioView() {
   const { wallets } = useWallets();
   const { ready, authenticated } = usePrivy();
@@ -28,6 +42,7 @@ export function PortfolioView() {
     null
   );
   const [isLoading, setIsLoading] = useState(false);
+  const [expandedTokens, setExpandedTokens] = useState<{ [key: string]: boolean }>({});
 
   const embeddedWallet = wallets.find(
     (wallet) => wallet.walletClientType === "privy"
@@ -41,10 +56,10 @@ export function PortfolioView() {
       try {
         const [chainData, allData] = await Promise.all([
           fetchPortfolio(
-            "0x00ce496A3aE288Fec2BA5b73039DB4f7c31a9144",
+            "0xF977814e90dA44bFA03b6295A0616a897441aceC",
             selectedChain
           ),
-          fetchAllChainPortfolio("0x00ce496A3aE288Fec2BA5b73039DB4f7c31a9144"),
+          fetchAllChainPortfolio("0xF977814e90dA44bFA03b6295A0616a897441aceC"),
         ]);
         setPortfolioData(chainData);
         setAllChainData(allData);
@@ -97,6 +112,50 @@ export function PortfolioView() {
     responsive: true,
     maintainAspectRatio: false,
     cutout: "65%",
+  };
+
+  const groupTokensBySymbol = (tokens: any[]): GroupedToken[] => {
+    const grouped = tokens.reduce((acc, token) => {
+      const key = token.symbol;
+      if (!acc[key]) {
+        acc[key] = {
+          symbol: token.symbol,
+          token: token.token,
+          logoUrl: token.logoUrl,
+          totalValue: '$0',
+          totalTokens: '0',
+          instances: []
+        };
+      }
+      
+      // Add chain instance
+      acc[key].instances.push({
+        chainName: token.chainName,
+        balance: token.balance,
+        value: token.value,
+        change24h: token.change24h
+      });
+
+      // Update totals
+      const totalValue = acc[key].instances.reduce((sum: number, instance: { value: string; }) => 
+        sum + parseFloat(instance.value.replace('$', '').replace(',', '')), 0);
+      const totalTokens = acc[key].instances.reduce((sum: number, instance: { balance: string; }) => 
+        sum + parseFloat(instance.balance.replace(',', '')), 0);
+      
+      acc[key].totalValue = `$${totalValue.toLocaleString()}`;
+      acc[key].totalTokens = totalTokens.toLocaleString();
+
+      return acc;
+    }, {});
+
+    return Object.values(grouped);
+  };
+
+  const toggleToken = (symbol: string) => {
+    setExpandedTokens(prev => ({
+      ...prev,
+      [symbol]: !prev[symbol]
+    }));
   };
 
   if (!ready || !embeddedWallet) {
@@ -214,54 +273,121 @@ export function PortfolioView() {
           </div>
 
           {/* All Chain Assets */}
-          <div className="lg:col-span-3 space-y-4">
+          <div className="lg:col-span-3 space-y-4 relative z-0"> {/* Added relative and z-0 */}
             <h3 className="text-lg font-medium">All Assets</h3>
             <div className="grid gap-4">
-              {allChainData.tokens.map((token, index) => (
+              {allChainData && groupTokensBySymbol(allChainData.tokens).map((token, index) => (
                 <div
-                  key={index}
-                  className="bg-white/5 p-4 rounded-xl backdrop-blur-sm flex items-center justify-between hover:bg-white/10 transition-colors border border-white/10"
+                  key={token.symbol}
+                  className="bg-white/5 p-4 rounded-xl backdrop-blur-sm hover:bg-white/10 transition-all duration-300 border border-white/10 relative" // Added relative
+                  style={{ zIndex: expandedTokens[token.symbol] ? 50 : 0 }} // Dynamic z-index
                 >
-                  <div className="flex items-center gap-4">
-                    {token.logoUrl && (
-                      <img
-                        src={token.logoUrl}
-                        alt={token.symbol}
-                        className="w-10 h-10 rounded-full"
-                      />
-                    )}
-                    <div>
-                      <div className="flex items-center gap-2">
-                        <p className="font-medium">{token.token}</p>
-
-                        <span className="text-xs px-2 py-1 bg-purple-500/20 text-purple-300 rounded-full">
-                          {token.chainName}
-                        </span>
+                  {/* Modified Token Header with Right-aligned Token Count */}
+                  <div className="flex items-center justify-between group cursor-pointer relative">
+                    <div className="flex items-center gap-3">
+                      {token.logoUrl && (
+                        <img
+                          src={token.logoUrl}
+                          alt={token.symbol}
+                          className="w-10 h-10 rounded-full ring-2 ring-purple-500/20"
+                        />
+                      )}
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <h3 className="text-base font-semibold tracking-wide text-gray-100 uppercase">
+                            {token.token}
+                          </h3>
+                          {token.instances.length > 1 && (
+                            <button
+                              onClick={() => toggleToken(token.symbol)}
+                              className="flex items-center gap-1 text-xs px-2 py-0.5 bg-purple-500/10 
+                                text-purple-300 rounded-full font-medium hover:bg-purple-500/20 transition-colors"
+                            >
+                              {token.instances.length} Chains
+                              <ChevronDown 
+                                className={`w-3.5 h-3.5 transition-transform duration-300 ${
+                                  expandedTokens[token.symbol] ? 'rotate-180' : ''
+                                }`} 
+                              />
+                            </button>
+                          )}
+                        </div>
+                        <p className="text-sm font-medium text-gray-400">
+                          {token.totalValue}
+                        </p>
                       </div>
-                      <p className="text-sm text-gray-400">
-                        {token.balance} {token.symbol}
+                    </div>
+                    <div className="text-right">
+                      <p className="text-sm font-medium text-gray-300">
+                        {token.totalTokens} <span className="text-gray-400">{token.symbol}</span>
                       </p>
                     </div>
                   </div>
-                  <div className="text-right">
-                    <p className="font-medium">{token.value}</p>
-                    <p
-                      className={`text-sm flex items-center justify-end gap-1 ${
-                        parseFloat(token.change24h) > 0
-                          ? "text-green-400"
-                          : parseFloat(token.change24h) < 0
-                          ? "text-red-400"
-                          : "text-gray-400"
-                      }`}
+
+                  {/* Modified Chain Dropdown - Repositioned to appear below chains button */}
+                  {token.instances.length > 1 && (
+                    <div 
+                      className={`absolute transform transition-all duration-300 ease-out z-[999]
+                        ${expandedTokens[token.symbol] ? 'opacity-100 translate-y-1' : 'opacity-0 -translate-y-4 pointer-events-none'}`}
+                      style={{
+                        top: '3.5rem', // Position below the chains button
+                        left: '7rem', // Align with the chains label
+                        width: '200px', // Slightly narrower width
+                      }}
                     >
-                      {parseFloat(token.change24h) > 0 ? (
-                        <TrendingUp className="w-3 h-3" />
-                      ) : (
-                        <TrendingDown className="w-3 h-3" />
-                      )}
-                      {token.change24h}
-                    </p>
-                  </div>
+                      <div className="bg-[#1a1b1e]/95 backdrop-blur-xl rounded-xl border border-purple-500/20 
+                        shadow-2xl shadow-black/50 overflow-hidden">
+                        <div className="p-2 bg-purple-500/10 border-b border-purple-500/20">
+                          <h4 className="text-xs font-medium text-purple-300 text-center uppercase">
+                            Chain Distribution
+                          </h4>
+                        </div>
+                        <div className="max-h-[300px] overflow-y-auto">
+                          {token.instances.map((instance, idx) => (
+                            <div
+                              key={idx}
+                              className="p-2 hover:bg-white/5 transition-all duration-200"
+                              style={{
+                                transform: expandedTokens[token.symbol] ? 'translateX(0)' : 'translateX(-8px)',
+                                opacity: expandedTokens[token.symbol] ? 1 : 0,
+                                transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                                transitionDelay: `${idx * 50}ms`
+                              }}
+                            >
+                              <div className="flex justify-between items-start gap-3">
+                                <div className="min-w-0 space-y-0.5">
+                                  <p className="text-xs font-medium text-gray-200 truncate">
+                                    {instance.chainName}
+                                  </p>
+                                  <div className={`text-[11px] font-medium flex items-center gap-1 ${
+                                    parseFloat(instance.change24h) > 0
+                                      ? "text-green-400"
+                                      : "text-red-400"
+                                  }`}>
+                                    {parseFloat(instance.change24h) > 0 ? (
+                                      <TrendingUp className="w-2.5 h-2.5" />
+                                    ) : (
+                                      <TrendingDown className="w-2.5 h-2.5" />
+                                    )}
+                                    {instance.change24h}
+                                  </div>
+                                </div>
+                                <div className="text-right shrink-0">
+                                  <p className="text-xs font-medium text-gray-300 whitespace-nowrap">
+                                    {instance.balance}
+                                  </p>
+                                  <p className="text-[11px] text-gray-400">
+                                    {instance.value}
+                                  </p>
+                                </div>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
                 </div>
               ))}
             </div>
