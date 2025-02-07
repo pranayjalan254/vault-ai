@@ -34,7 +34,17 @@ export function ChatInterface({
   const chatContainerRef = useRef<HTMLDivElement>(null);
   const { isListening, startListening } = useSpeechToText();
 
-  // Replace simulateAIResponse with real API call
+  // Add this function to handle scrolling
+  const scrollToBottom = () => {
+    if (chatContainerRef.current) {
+      chatContainerRef.current.scrollTo({
+        top: chatContainerRef.current.scrollHeight,
+        behavior: "smooth",
+      });
+    }
+  };
+
+  // Update getAIResponse to handle errors better
   const getAIResponse = async (userMessage: string) => {
     setIsLoading(true);
     try {
@@ -52,14 +62,16 @@ export function ChatInterface({
         throw new Error(data.error || "Failed to get response");
       }
 
-      const aiMessage = {
-        id: `ai-${Date.now()}`,
-        text: data.response,
-        isUser: false,
-        timestamp: new Date(),
-      };
+      if (data.response && data.response.trim()) {
+        const aiMessage = {
+          id: `ai-${Date.now()}`,
+          text: data.response,
+          isUser: false,
+          timestamp: new Date(),
+        };
 
-      setMessages((prev) => [...prev, aiMessage]);
+        setMessages((prev) => [...prev, aiMessage]);
+      }
     } catch (error) {
       console.error("Error getting AI response:", error);
       const errorMessage = {
@@ -74,9 +86,9 @@ export function ChatInterface({
     }
   };
 
-  // Update the useEffect to use the new function
+  // Update the useEffect to prevent duplicate messages
   useEffect(() => {
-    if (initialMessage.trim()) {
+    if (initialMessage.trim() && messages.length === 0) {
       const userMessage = {
         id: `user-${Date.now()}`,
         text: initialMessage,
@@ -88,14 +100,12 @@ export function ChatInterface({
     }
   }, [initialMessage]);
 
+  // Update the useEffect for messages to always scroll on new messages
   useEffect(() => {
-    if (chatContainerRef.current) {
-      chatContainerRef.current.scrollTop =
-        chatContainerRef.current.scrollHeight;
-    }
+    scrollToBottom();
   }, [messages]);
 
-  // Update handleSubmit to use the new function
+  // Update handleSubmit to scroll after adding user message
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (inputValue.trim()) {
@@ -107,6 +117,7 @@ export function ChatInterface({
       };
       setMessages((prev) => [...prev, userMessage]);
       setInputValue("");
+      scrollToBottom(); // Add this line
       await getAIResponse(inputValue);
     }
   };
@@ -135,37 +146,39 @@ export function ChatInterface({
   };
 
   return (
-    <div className="h-full flex flex-col bg-black/20 backdrop-blur-lg">
-      {/* Chat Header */}
-      <div className="flex items-center justify-between p-4 border-b border-white/5 bg-black/30">
-        <div className="flex items-center gap-3">
-          <div className="p-2 rounded-lg bg-purple-500/10">
-            <Beef className="h-6 w-6 text-purple-400" />
+    <div className="flex flex-col h-[100vh] overflow-hidden">
+      {/* Fixed Header */}
+      <div className="flex-none border-b border-white/5 bg-black/30">
+        <div className="flex items-center justify-between p-4">
+          <div className="flex items-center gap-3">
+            <div className="p-2 rounded-lg bg-purple-500/10">
+              <Beef className="h-6 w-6 text-purple-400" />
+            </div>
+            <h2 className="text-xl font-semibold text-white">
+              Vault AI Assistant
+            </h2>
           </div>
-          <h2 className="text-xl font-semibold text-white">
-            Vault AI Assistant
-          </h2>
-        </div>
-        <div className="flex items-center gap-2">
-          <button
-            onClick={handleNewChat}
-            className="p-2 text-gray-400 hover:text-purple-400 transition-colors rounded-lg hover:bg-white/5"
-          >
-            <span className="text-sm">New Chat</span>
-          </button>
-          <button
-            onClick={onClose}
-            className="p-2 text-gray-400 hover:text-purple-400 transition-colors rounded-lg hover:bg-white/5"
-          >
-            <X className="h-5 w-5" />
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={handleNewChat}
+              className="p-2 text-gray-400 hover:text-purple-400 transition-colors rounded-lg hover:bg-white/5"
+            >
+              <span className="text-sm">New Chat</span>
+            </button>
+            <button
+              onClick={onClose}
+              className="p-2 text-gray-400 hover:text-purple-400 transition-colors rounded-lg hover:bg-white/5"
+            >
+              <X className="h-5 w-5" />
+            </button>
+          </div>
         </div>
       </div>
 
-      {/* Chat Messages Area */}
+      {/* Scrollable Chat Messages Area */}
       <div
         ref={chatContainerRef}
-        className="flex-1 overflow-y-auto p-4 space-y-4 min-h-[calc(100vh-180px)]"
+        className="flex-1 overflow-y-auto p-4 space-y-4 scroll-smooth"
       >
         {messages.length === 0 && !isLoading && (
           <div className="h-full flex flex-col items-center justify-center text-gray-400 gap-2">
@@ -213,8 +226,8 @@ export function ChatInterface({
         )}
       </div>
 
-      {/* Chat Input Area */}
-      <div className="p-4 border-t border-white/5 bg-black/30">
+      {/* Fixed Input Area */}
+      <div className="flex-none p-4 border-t border-white/5 bg-black/30">
         <form onSubmit={handleSubmit} className="flex items-center gap-2">
           <div className="flex-1 relative">
             <input

@@ -57,12 +57,7 @@ export function HomeView({
   };
 
   const handleNewChat = () => {
-    setChatKey((prev) => prev + 1); // Increment key to force new chat instance
-    setInputValue("");
-  };
-
-  const handleNewChat = () => {
-    setChatKey((prev) => prev + 1); // Increment key to force new chat instance
+    setChatKey((prev) => prev + 1);
     setInputValue("");
   };
 
