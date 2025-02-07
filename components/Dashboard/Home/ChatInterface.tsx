@@ -9,6 +9,7 @@ interface ChatInterfaceProps {
   onClose: () => void;
   models: string[];
   setSelectedModel: (model: string) => void;
+  onNewChat: () => void;  // Add this prop
 }
 
 interface Message {
@@ -24,6 +25,7 @@ export function ChatInterface({
   onClose,
   models,
   setSelectedModel,
+  onNewChat,
 }: ChatInterfaceProps) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputValue, setInputValue] = useState("");
@@ -98,6 +100,12 @@ export function ChatInterface({
     setInputValue(text);
   };
 
+  const handleNewChat = () => {
+    setMessages([]);
+    setInputValue("");
+    onNewChat();
+  };
+
   return (
     <div className="h-full flex flex-col bg-black/20 backdrop-blur-lg">
       {/* Chat Header */}
@@ -110,12 +118,20 @@ export function ChatInterface({
             Vault AI Assistant
           </h2>
         </div>
-        <button
-          onClick={onClose}
-          className="p-2 text-gray-400 hover:text-purple-400 transition-colors rounded-lg hover:bg-white/5"
-        >
-          <X className="h-5 w-5" />
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={handleNewChat}
+            className="p-2 text-gray-400 hover:text-purple-400 transition-colors rounded-lg hover:bg-white/5"
+          >
+            <span className="text-sm">New Chat</span>
+          </button>
+          <button
+            onClick={onClose}
+            className="p-2 text-gray-400 hover:text-purple-400 transition-colors rounded-lg hover:bg-white/5"
+          >
+            <X className="h-5 w-5" />
+          </button>
+        </div>
       </div>
 
       {/* Chat Messages Area */}

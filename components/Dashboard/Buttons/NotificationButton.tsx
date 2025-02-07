@@ -20,6 +20,7 @@ interface TokenPrice {
 
 export function NotificationButton() {
   const [notifications, setNotifications] = useState<Notification[]>([]);
+  const [hasUnread, setHasUnread] = useState(false);
   const gasFees = useGasFees();
   const [lastAlertTime, setLastAlertTime] = useState(0);
   const [swappedTokens, setSwappedTokens] = useState<Set<string>>(new Set());
@@ -35,7 +36,8 @@ export function NotificationButton() {
         time: 'Just now'
       };
 
-      setNotifications(prev => [lowGasNotification, ...prev]);
+      setNotifications([lowGasNotification]); // Replace existing notifications
+      setHasUnread(true);
       setLastAlertTime(currentTime);
     }
   }, [lastAlertTime]);
@@ -45,7 +47,7 @@ export function NotificationButton() {
       if (!swappedTokens.has(token.token)) {
         const priceDropPercentage = ((token.buyingPrice - token.currentPrice) / token.buyingPrice) * 100;
         
-        if (priceDropPercentage >= 80) { // Price dropped by 80% or more (20% of buying price)
+        if (priceDropPercentage >= 80) {
           const swapNotification = {
             id: Date.now(),
             title: 'Auto-Swap Executed',
@@ -53,7 +55,8 @@ export function NotificationButton() {
             time: 'Just now'
           };
 
-          setNotifications(prev => [swapNotification, ...prev]);
+          setNotifications([swapNotification]); // Replace existing notifications
+          setHasUnread(true);
           setSwappedTokens(prev => new Set(prev).add(token.token));
         }
       }
@@ -61,45 +64,22 @@ export function NotificationButton() {
   }, [swappedTokens]);
 
   useEffect(() => {
-    if (gasFees?.estimatedBaseFee) {
-      const gasNotification = {
-        id: Date.now(),
-        title: 'Current Gas Fees',
-        description: `Estimated Base Fee: ${Number(gasFees.estimatedBaseFee).toFixed(2)} Gwei`,
-        time: 'Just now'
-      };
-
-      setNotifications(prev => {
-        const filtered = prev.filter(n => n.title !== 'Current Gas Fees');
-        return [gasNotification, ...filtered];
-      });
-
-      // Check if gas fee is below 3 Gwei
-      if (Number(gasFees.estimatedBaseFee) < 2) {
-        addLowGasAlert();
-      }
+    if (gasFees?.estimatedBaseFee && Number(gasFees.estimatedBaseFee) < 2) {
+      addLowGasAlert();
     }
   }, [gasFees, addLowGasAlert]);
 
-  useEffect(() => {
-    // Mock token data - replace with your actual token price monitoring logic
-    const mockTokens: TokenPrice[] = [
-      {
-        token: 'ETH',
-        buyingPrice: 2000,
-        currentPrice: 300 // This would trigger the swap notification as it's below 20%
-      },
-      // Add more tokens as needed
-    ];
-
-    checkTokenPrices(mockTokens);
-  }, [checkTokenPrices]); // Add appropriate dependencies based on your data source
+  const handleOpenChange = (open: boolean) => {
+    if (open) {
+      setHasUnread(false);
+    }
+  };
 
   return (
-    <Popover.Root>
+    <Popover.Root onOpenChange={handleOpenChange}>
       <Popover.Trigger className="relative p-2 hover:bg-white/5 rounded-lg transition-colors">
         <Bell className="h-5 w-5 z-50 text-gray-400" />
-        {notifications.length > 0 && (
+        {hasUnread && notifications.length > 0 && (
           <span className="absolute -top-1 -right-1 w-4 h-4 bg-purple-500 rounded-full text-xs flex items-center justify-center text-white">
             {notifications.length}
           </span>
@@ -116,16 +96,20 @@ export function NotificationButton() {
             <div className="px-2 py-1 border-b border-gray-800">
               <h3 className="font-medium">Notifications</h3>
             </div>
-            {notifications.map(notification => (
-              <div 
-                key={notification.id}
-                className="p-2 hover:bg-white/5 rounded-lg cursor-pointer"
-              >
-                <div className="text-sm font-medium">{notification.title}</div>
-                <div className="text-xs text-gray-400">{notification.description}</div>
-                <div className="text-xs text-gray-500 mt-1">{notification.time}</div>
-              </div>
-            ))}
+            {notifications.length > 0 ? (
+              notifications.map(notification => (
+                <div 
+                  key={notification.id}
+                  className="p-2 hover:bg-white/5 rounded-lg cursor-pointer"
+                >
+                  <div className="text-sm font-medium">{notification.title}</div>
+                  <div className="text-xs text-gray-400">{notification.description}</div>
+                  <div className="text-xs text-gray-500 mt-1">{notification.time}</div>
+                </div>
+              ))
+            ) : (
+              <div className="p-2 text-sm text-gray-400">No new notifications</div>
+            )}
           </div>
           <Popover.Arrow className="fill-gray-900" />
         </Popover.Content>
