@@ -3,7 +3,7 @@ import { ArrowRight, Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 
-export function LoginButton() {
+export async function LoginButton() {
   const router = useRouter();
   const { ready, authenticated, login } = usePrivy();
   const [isLoading, setIsLoading] = useState(false);
