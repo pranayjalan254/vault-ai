@@ -48,7 +48,9 @@ function Dashboard() {
 
   return (
     <div className="min-h-screen text-gray-200">
-      <Sidebar activeSection={activeSection} setActiveSection={setActiveSection} />
+      <Sidebar activeSection={activeSection} setActiveSection={setActiveSection} isSidebarOpen={false} setIsSidebarOpen={function (isOpen: boolean): void {
+        throw new Error('Function not implemented.');
+      } } />
       <div className="pl-64">
         <div className="h-screen">
           {renderMainContent()}

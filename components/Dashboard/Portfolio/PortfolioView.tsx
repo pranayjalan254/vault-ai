@@ -22,6 +22,20 @@ import { PortfolioLoadingSkeleton } from "./LoadingSkeleton";
 
 ChartJS.register(ArcElement, Tooltip, Legend);
 
+interface GroupedToken {
+  symbol: string;
+  token: string;
+  logoUrl: string;
+  totalValue: string;
+  totalTokens: string;
+  instances: {
+    chainName: string;
+    balance: string;
+    value: string;
+    change24h: string;
+  }[];
+}
+
 export function PortfolioView() {
   const { wallets } = useWallets();
   const { ready, authenticated } = usePrivy();
@@ -34,6 +48,7 @@ export function PortfolioView() {
     null
   );
   const [isLoading, setIsLoading] = useState(false);
+  const [expandedTokens, setExpandedTokens] = useState<{ [key: string]: boolean }>({});
   const [expandedTokens, setExpandedTokens] = useState<Set<string>>(new Set());
   const [error, setError] = useState<string | null>(null);
 
@@ -51,8 +66,10 @@ export function PortfolioView() {
         const [chainData, allData] = await Promise.all([
           fetchPortfolio(
             "0xF977814e90dA44bFA03b6295A0616a897441aceC",
+            "0xF977814e90dA44bFA03b6295A0616a897441aceC",
             selectedChain
           ),
+          fetchAllChainPortfolio("0xF977814e90dA44bFA03b6295A0616a897441aceC"),
           fetchAllChainPortfolio("0xF977814e90dA44bFA03b6295A0616a897441aceC"),
         ]);
 
@@ -114,129 +131,49 @@ export function PortfolioView() {
     cutout: "65%",
   };
 
-  const groupedTokens = React.useMemo(() => {
-    if (!allChainData?.tokens) return {};
-
-    return allChainData.tokens.reduce((acc: any, token) => {
-      const key = token.token.toLowerCase();
+  const groupTokensBySymbol = (tokens: any[]): GroupedToken[] => {
+    const grouped = tokens.reduce((acc, token) => {
+      const key = token.symbol;
       if (!acc[key]) {
-        acc[key] = [];
+        acc[key] = {
+          symbol: token.symbol,
+          token: token.token,
+          logoUrl: token.logoUrl,
+          totalValue: '$0',
+          totalTokens: '0',
+          instances: []
+        };
       }
-      acc[key].push(token);
+      
+      // Add chain instance
+      acc[key].instances.push({
+        chainName: token.chainName,
+        balance: token.balance,
+        value: token.value,
+        change24h: token.change24h
+      });
+
+      // Update totals
+      const totalValue = acc[key].instances.reduce((sum: number, instance: { value: string; }) => 
+        sum + parseFloat(instance.value.replace('$', '').replace(',', '')), 0);
+      const totalTokens = acc[key].instances.reduce((sum: number, instance: { balance: string; }) => 
+        sum + parseFloat(instance.balance.replace(',', '')), 0);
+      
+      acc[key].totalValue = `$${totalValue.toLocaleString()}`;
+      acc[key].totalTokens = totalTokens.toLocaleString();
+
       return acc;
     }, {});
-  }, [allChainData?.tokens]);
 
-  const toggleTokenExpansion = (tokenName: string) => {
-    setExpandedTokens((prev) => {
-      const next = new Set(prev);
-      if (next.has(tokenName)) {
-        next.delete(tokenName);
-      } else {
-        next.add(tokenName);
-      }
-      return next;
-    });
+    return Object.values(grouped);
   };
 
-  const renderAllAssets = () => (
-    <div className="lg:col-span-3 space-y-4">
-      <h3 className="text-lg font-medium">All Assets</h3>
-      <div className="grid gap-4">
-        {Object.entries(groupedTokens as Record<string, any[]>).map(
-          ([tokenKey, tokens]) => {
-            const isExpanded = expandedTokens.has(tokenKey);
-            const totalValue = tokens.reduce(
-              (sum, t) =>
-                sum + parseFloat(t.value.replace("$", "").replace(",", "")),
-              0
-            );
-            const primaryToken = tokens[0];
-
-            return (
-              <div key={tokenKey} className="space-y-2">
-                <div
-                  className="bg-white/5 p-4 rounded-xl backdrop-blur-sm flex items-center justify-between hover:bg-white/10 transition-colors border border-white/10 cursor-pointer"
-                  onClick={() =>
-                    tokens.length > 1 && toggleTokenExpansion(tokenKey)
-                  }
-                >
-                  <div className="flex items-center gap-4">
-                    {primaryToken.logoUrl && (
-                      <img
-                        src={primaryToken.logoUrl}
-                        alt={primaryToken.symbol}
-                        className="w-10 h-10 rounded-full"
-                      />
-                    )}
-                    <div>
-                      <div className="flex items-center gap-2">
-                        <p className="font-medium">{primaryToken.token}</p>
-                        {tokens.length > 1 && (
-                          <span className="text-xs px-2 py-1 bg-purple-500/20 text-purple-300 rounded-full">
-                            {tokens.length} chains
-                          </span>
-                        )}
-                      </div>
-                      <p className="text-sm text-gray-400">
-                        Total: ${totalValue.toFixed(2)}
-                      </p>
-                    </div>
-                  </div>
-                  {tokens.length > 1 && (
-                    <button className="text-gray-400">
-                      {isExpanded ? (
-                        <ChevronUp className="w-5 h-5" />
-                      ) : (
-                        <ChevronDown className="w-5 h-5" />
-                      )}
-                    </button>
-                  )}
-                </div>
-
-                {isExpanded && (
-                  <div className="ml-14 space-y-2">
-                    {tokens.map((token, idx) => (
-                      <div
-                        key={`${tokenKey}-${idx}`}
-                        className="bg-white/5 p-3 rounded-lg flex items-center justify-between"
-                      >
-                        <div className="flex items-center gap-2">
-                          <span className="text-sm font-medium bg-purple-500/20 text-purple-300 px-2 py-1 rounded-full">
-                            {token.chainName}
-                          </span>
-                          <span className="text-sm text-gray-400">
-                            {token.balance} {token.symbol}
-                          </span>
-                        </div>
-                        <div className="text-right">
-                          <p className="font-medium">{token.value}</p>
-                          <p
-                            className={`text-sm flex items-center justify-end gap-1 ${
-                              parseFloat(token.change24h) > 0
-                                ? "text-green-400"
-                                : "text-red-400"
-                            }`}
-                          >
-                            {parseFloat(token.change24h) > 0 ? (
-                              <TrendingUp className="w-3 h-3" />
-                            ) : (
-                              <TrendingDown className="w-3 h-3" />
-                            )}
-                            {token.change24h}
-                          </p>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-            );
-          }
-        )}
-      </div>
-    </div>
-  );
+  const toggleToken = (symbol: string) => {
+    setExpandedTokens(prev => ({
+      ...prev,
+      [symbol]: !prev[symbol]
+    }));
+  };
 
   if (!ready || !embeddedWallet) {
     return <PortfolioLoadingSkeleton />;
@@ -360,7 +297,125 @@ export function PortfolioView() {
           </div>
 
           {/* All Chain Assets */}
-          {renderAllAssets()}
+          <div className="lg:col-span-3 space-y-4 relative z-0"> {/* Added relative and z-0 */}
+            <h3 className="text-lg font-medium">All Assets</h3>
+            <div className="grid gap-4">
+              {allChainData && groupTokensBySymbol(allChainData.tokens).map((token, index) => (
+                <div
+                  key={token.symbol}
+                  className="bg-white/5 p-4 rounded-xl backdrop-blur-sm hover:bg-white/10 transition-all duration-300 border border-white/10 relative" // Added relative
+                  style={{ zIndex: expandedTokens[token.symbol] ? 50 : 0 }} // Dynamic z-index
+                >
+                  {/* Modified Token Header with Right-aligned Token Count */}
+                  <div className="flex items-center justify-between group cursor-pointer relative">
+                    <div className="flex items-center gap-3">
+                      {token.logoUrl && (
+                        <img
+                          src={token.logoUrl}
+                          alt={token.symbol}
+                          className="w-10 h-10 rounded-full ring-2 ring-purple-500/20"
+                        />
+                      )}
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <h3 className="text-base font-semibold tracking-wide text-gray-100 uppercase">
+                            {token.token}
+                          </h3>
+                          {token.instances.length > 1 && (
+                            <button
+                              onClick={() => toggleToken(token.symbol)}
+                              className="flex items-center gap-1 text-xs px-2 py-0.5 bg-purple-500/10 
+                                text-purple-300 rounded-full font-medium hover:bg-purple-500/20 transition-colors"
+                            >
+                              {token.instances.length} Chains
+                              <ChevronDown 
+                                className={`w-3.5 h-3.5 transition-transform duration-300 ${
+                                  expandedTokens[token.symbol] ? 'rotate-180' : ''
+                                }`} 
+                              />
+                            </button>
+                          )}
+                        </div>
+                        <p className="text-sm font-medium text-gray-400">
+                          {token.totalValue}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-sm font-medium text-gray-300">
+                        {token.totalTokens} <span className="text-gray-400">{token.symbol}</span>
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Modified Chain Dropdown - Repositioned to appear below chains button */}
+                  {token.instances.length > 1 && (
+                    <div 
+                      className={`absolute transform transition-all duration-300 ease-out z-[999]
+                        ${expandedTokens[token.symbol] ? 'opacity-100 translate-y-1' : 'opacity-0 -translate-y-4 pointer-events-none'}`}
+                      style={{
+                        top: '3.5rem', // Position below the chains button
+                        left: '7rem', // Align with the chains label
+                        width: '200px', // Slightly narrower width
+                      }}
+                    >
+                      <div className="bg-[#1a1b1e]/95 backdrop-blur-xl rounded-xl border border-purple-500/20 
+                        shadow-2xl shadow-black/50 overflow-hidden">
+                        <div className="p-2 bg-purple-500/10 border-b border-purple-500/20">
+                          <h4 className="text-xs font-medium text-purple-300 text-center uppercase">
+                            Chain Distribution
+                          </h4>
+                        </div>
+                        <div className="max-h-[300px] overflow-y-auto">
+                          {token.instances.map((instance, idx) => (
+                            <div
+                              key={idx}
+                              className="p-2 hover:bg-white/5 transition-all duration-200"
+                              style={{
+                                transform: expandedTokens[token.symbol] ? 'translateX(0)' : 'translateX(-8px)',
+                                opacity: expandedTokens[token.symbol] ? 1 : 0,
+                                transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                                transitionDelay: `${idx * 50}ms`
+                              }}
+                            >
+                              <div className="flex justify-between items-start gap-3">
+                                <div className="min-w-0 space-y-0.5">
+                                  <p className="text-xs font-medium text-gray-200 truncate">
+                                    {instance.chainName}
+                                  </p>
+                                  <div className={`text-[11px] font-medium flex items-center gap-1 ${
+                                    parseFloat(instance.change24h) > 0
+                                      ? "text-green-400"
+                                      : "text-red-400"
+                                  }`}>
+                                    {parseFloat(instance.change24h) > 0 ? (
+                                      <TrendingUp className="w-2.5 h-2.5" />
+                                    ) : (
+                                      <TrendingDown className="w-2.5 h-2.5" />
+                                    )}
+                                    {instance.change24h}
+                                  </div>
+                                </div>
+                                <div className="text-right shrink-0">
+                                  <p className="text-xs font-medium text-gray-300 whitespace-nowrap">
+                                    {instance.balance}
+                                  </p>
+                                  <p className="text-[11px] text-gray-400">
+                                    {instance.value}
+                                  </p>
+                                </div>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                </div>
+              ))}
+            </div>
+          </div>
         </div>
       ) : (
         <div className="glass-effect rounded-2xl p-8 text-center animate-fadeIn">

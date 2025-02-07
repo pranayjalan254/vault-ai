@@ -23,3 +23,76 @@
 .sidebar-gradient {
   background: linear-gradient(180deg, rgba(0,0,0,0.4) 0%, rgba(0,0,0,0.2) 100%);
 }
+
+.scroll-smooth {
+  scroll-behavior: smooth;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fadeIn {
+  animation: fadeIn 0.3s ease-out forwards;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    height: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    height: var(--target-height);
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 1;
+    height: var(--target-height);
+    transform: translateY(0);
+  }
+  to {
+    opacity: 0;
+    height: 0;
+    transform: translateY(-8px);
+  }
+}
+
+@keyframes slideInFromLeft {
+  from {
+    opacity: 0;
+    transform: translateX(-12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.token-dropdown {
+  overflow: hidden;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.token-dropdown-enter {
+  animation: slideDown 0.3s forwards cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.token-dropdown-exit {
+  animation: slideUp 0.3s forwards cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.chain-item-enter {
+  animation: slideInFromLeft 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
