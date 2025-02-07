@@ -7,7 +7,8 @@ import {
   MessageSquare,
   User,
   Briefcase,
-  Menu,
+  MessagesSquare,
+  Bot,
 } from "lucide-react";
 import { DelegateActionButton } from "../Buttons/DelegateButton";
 

@@ -14,11 +14,11 @@ export async function fetchPortfolio(
 ): Promise<PortfolioResponse> {
   try {
     const balanceResponse = await fetch(
-      `http://localhost:5173/bridge/getUserTokenBalances/${address}/${chain}`
+      `http://localhost:5174/bridge/getUserTokenBalances/${address}/${chain}`
     );
     const balanceData = await balanceResponse.json();
     const changeResponse = await fetch(
-      `http://localhost:5173/bridge/getToken24hChange/${chain}`
+      `http://localhost:5174/bridge/getToken24hChange/${chain}`
     );
     const changeData = await changeResponse.json();
 
@@ -27,7 +27,7 @@ export async function fetchPortfolio(
     const tokens = await Promise.all(
       balanceData.change.map(async (token: any) => {
         const priceResponse = await fetch(
-          `http://localhost:5173/bridge/getTokenPrice/${token.address}`
+          `http://localhost:5174/bridge/getTokenPrice/${token.address}`
         );
         const priceData = await priceResponse.json();
         const tokenChange = changeData.find(

@@ -1,6 +1,12 @@
 import React, { useEffect, useState } from "react";
 import { useWallets, usePrivy, useUser } from "@privy-io/react-auth";
-import { Loader2, TrendingUp, TrendingDown, ArrowRight, ChevronDown, ChevronUp } from "lucide-react";
+import {
+  TrendingUp,
+  TrendingDown,
+  ArrowRight,
+  ChevronDown,
+  ChevronUp,
+} from "lucide-react";
 import { ChainType, PortfolioResponse } from "../../../types/portfolio";
 import {
   fetchPortfolio,
@@ -11,8 +17,8 @@ import { Pie } from "react-chartjs-2";
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from "chart.js";
 import { FundWallet } from "../FundWallet/FundWallet";
 import { LogoutButton } from "../Buttons/LogoutButton";
-import { NotificationButton } from '../Buttons/NotificationButton';
-import { PortfolioLoadingSkeleton } from './LoadingSkeleton';
+import { NotificationButton } from "../Buttons/NotificationButton";
+import { PortfolioLoadingSkeleton } from "./LoadingSkeleton";
 
 ChartJS.register(ArcElement, Tooltip, Legend);
 
@@ -43,6 +49,8 @@ export function PortfolioView() {
   );
   const [isLoading, setIsLoading] = useState(false);
   const [expandedTokens, setExpandedTokens] = useState<{ [key: string]: boolean }>({});
+  const [expandedTokens, setExpandedTokens] = useState<Set<string>>(new Set());
+  const [error, setError] = useState<string | null>(null);
 
   const embeddedWallet = wallets.find(
     (wallet) => wallet.walletClientType === "privy"
@@ -53,18 +61,27 @@ export function PortfolioView() {
       if (!embeddedWallet?.address) return;
 
       setIsLoading(true);
+      setError(null);
       try {
         const [chainData, allData] = await Promise.all([
           fetchPortfolio(
             "0xF977814e90dA44bFA03b6295A0616a897441aceC",
+            "0xF977814e90dA44bFA03b6295A0616a897441aceC",
             selectedChain
           ),
           fetchAllChainPortfolio("0xF977814e90dA44bFA03b6295A0616a897441aceC"),
+          fetchAllChainPortfolio("0xF977814e90dA44bFA03b6295A0616a897441aceC"),
         ]);
+
+        if (!chainData.tokens.length && !allData.tokens.length) {
+          setError("No assets found for this address");
+        }
+
         setPortfolioData(chainData);
         setAllChainData(allData);
       } catch (error) {
         console.error("Failed to fetch portfolio:", error);
+        setError("Failed to load portfolio data");
       } finally {
         setIsLoading(false);
       }
@@ -196,7 +213,14 @@ export function PortfolioView() {
       </div>
 
       {isLoading ? (
-          <PortfolioLoadingSkeleton />
+        <PortfolioLoadingSkeleton />
+      ) : error ? (
+        <div className="glass-effect rounded-2xl p-8 text-center animate-fadeIn">
+          <p className="text-xl font-medium mb-2">{error}</p>
+          <p className="text-sm text-gray-400">
+            Please check your connection and try again
+          </p>
+        </div>
       ) : portfolioData && allChainData ? (
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 animate-slideUp">
           {/* Chain-specific Portfolio Card */}
