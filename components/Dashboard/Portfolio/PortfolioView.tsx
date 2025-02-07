@@ -49,7 +49,6 @@ export function PortfolioView() {
   );
   const [isLoading, setIsLoading] = useState(false);
   const [expandedTokens, setExpandedTokens] = useState<{ [key: string]: boolean }>({});
-  const [expandedTokens, setExpandedTokens] = useState<Set<string>>(new Set());
   const [error, setError] = useState<string | null>(null);
 
   const embeddedWallet = wallets.find(
@@ -66,10 +65,8 @@ export function PortfolioView() {
         const [chainData, allData] = await Promise.all([
           fetchPortfolio(
             "0xF977814e90dA44bFA03b6295A0616a897441aceC",
-            "0xF977814e90dA44bFA03b6295A0616a897441aceC",
             selectedChain
           ),
-          fetchAllChainPortfolio("0xF977814e90dA44bFA03b6295A0616a897441aceC"),
           fetchAllChainPortfolio("0xF977814e90dA44bFA03b6295A0616a897441aceC"),
         ]);
 
