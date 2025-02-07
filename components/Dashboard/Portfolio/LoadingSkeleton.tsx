@@ -63,22 +63,38 @@ export function PortfolioLoadingSkeleton() {
           <div className="h-6 w-32 bg-gray-700/50 rounded"></div>
           <div className="grid gap-4">
             {[...Array(4)].map((_, i) => (
-              <div key={i} className="glass-effect p-4 rounded-xl animate-pulse">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-4">
-                    <div className="w-10 h-10 bg-gray-600/50 rounded-full"></div>
-                    <div className="space-y-2">
-                      <div className="flex items-center gap-2">
-                        <div className="h-4 w-24 bg-gray-600/50 rounded"></div>
-                        <div className="h-4 w-16 bg-purple-500/20 rounded-full"></div>
+              <div key={i}>
+                <div className="glass-effect p-4 rounded-xl animate-pulse">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-4">
+                      <div className="w-10 h-10 bg-gray-600/50 rounded-full"></div>
+                      <div className="space-y-2">
+                        <div className="flex items-center gap-2">
+                          <div className="h-4 w-24 bg-gray-600/50 rounded"></div>
+                          <div className="h-4 w-16 bg-purple-500/20 rounded-full"></div>
+                        </div>
+                        <div className="h-3 w-32 bg-gray-600/50 rounded"></div>
                       </div>
-                      <div className="h-3 w-32 bg-gray-600/50 rounded"></div>
+                    </div>
+                    <div className="space-y-2 text-right">
+                      <div className="h-4 w-24 bg-gray-600/50 rounded ml-auto"></div>
+                      <div className="h-3 w-16 bg-gray-600/50 rounded ml-auto"></div>
                     </div>
                   </div>
-                  <div className="space-y-2 text-right">
-                    <div className="h-4 w-24 bg-gray-600/50 rounded ml-auto"></div>
-                    <div className="h-3 w-16 bg-gray-600/50 rounded ml-auto"></div>
-                  </div>
+                </div>
+                {/* Dropdown Skeleton */}
+                <div className="mt-1 ml-14 hidden">
+                  {[...Array(3)].map((_, j) => (
+                    <div key={j} className="glass-effect p-3 rounded-lg animate-pulse mt-1">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                          <div className="w-6 h-6 bg-gray-600/50 rounded-full"></div>
+                          <div className="h-3 w-20 bg-gray-600/50 rounded"></div>
+                        </div>
+                        <div className="h-3 w-16 bg-gray-600/50 rounded"></div>
+                      </div>
+                    </div>
+                  ))}
                 </div>
               </div>
             ))}

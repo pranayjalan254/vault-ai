@@ -7,13 +7,15 @@ import {
   ArrowRight,
   Mic,
   Loader2,
+  Bot,
 } from "lucide-react";
 import { ModelSelector } from "./ModelSelector";
 import { ActionCard } from "./ActionCard";
 import { LogoutButton } from "../Buttons/LogoutButton";
-import { ChatInterface } from "./ChatInterface"; // New component to be created
-import { NotificationButton } from '../Buttons/NotificationButton';
-import { useSpeechToText } from '../../../hooks/useSpeechToText';
+import { ChatInterface } from "./ChatInterface";
+import { NotificationButton } from "../Buttons/NotificationButton";
+import { useSpeechToText } from "../../../hooks/useSpeechToText";
+import style from "styled-jsx/style";
 
 interface HomeViewProps {
   selectedModel: string;
@@ -32,6 +34,7 @@ export function HomeView({
 }: HomeViewProps) {
   const [inputValue, setInputValue] = useState("");
   const [showChat, setShowChat] = useState(false);
+  const [chatKey, setChatKey] = useState(0); // Add this new state
   const { isListening, startListening } = useSpeechToText();
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -53,6 +56,11 @@ export function HomeView({
     setInputValue(text);
   };
 
+  const handleNewChat = () => {
+    setChatKey((prev) => prev + 1); // Increment key to force new chat instance
+    setInputValue("");
+  };
+
   return (
     <div className="justify-center h-full relative gradient-bg">
       <div
@@ -64,16 +72,22 @@ export function HomeView({
           <NotificationButton />
           <LogoutButton />
         </div>
-        <div className="flex flex-col items-center justify-center h-full max-w-3xl mx-auto pt-16 pb-8 animate-slideUp">
-          <Bee className="h-16 w-16 text-purple-400 mb-6 animate-pulse-slow" />
+        <div
+          className="flex flex-col items-center justify-center h-full max-w-3xl mx-auto pt-16 pb-8 animate-slideUp"
+          style={{ paddingTop: "135px" }}
+        >
+          <Bot className="w-10 h-10 text-purple-500" />
           <h1 className="text-4xl font-semibold mb-2 gradient-text text-center">
             Your AI-Powered DeFi Agent
           </h1>
           <p className="text-gray-400 mb-8 text-lg text-center">
             Manage your crypto portfolio, stake, swap and more with Vault AI
           </p>
-          <div className="w-full max-w-xl mb-8 relative">
-            <form onSubmit={handleSubmit} className="glass-effect rounded-lg p-1">
+          <div className="w-full max-w-xl mb-8 relative z-50">
+            <form
+              onSubmit={handleSubmit}
+              className="glass-effect rounded-lg p-1"
+            >
               <input
                 type="text"
                 value={inputValue}
@@ -87,9 +101,9 @@ export function HomeView({
                   type="button"
                   onClick={() => startListening(handleSpeechInput)}
                   className={`p-2 rounded-lg transition-all ${
-                    isListening 
-                      ? 'bg-purple-500/20 text-purple-400 animate-pulse' 
-                      : 'text-gray-400 hover:text-purple-400'
+                    isListening
+                      ? "bg-purple-500/20 text-purple-400 animate-pulse"
+                      : "text-gray-400 hover:text-purple-400"
                   }`}
                 >
                   {isListening ? (
@@ -104,7 +118,7 @@ export function HomeView({
                   setIsModelOpen={setIsModelOpen}
                   setSelectedModel={setSelectedModel}
                   models={models}
-                  direction="down" // Optional since it's the default
+                  direction="down"
                 />
                 <button type="submit">
                   <ArrowRight className="h-5 w-5 text-gray-400 hover:text-purple-400 transition-colors" />
@@ -139,11 +153,13 @@ export function HomeView({
       {showChat && (
         <div className="animate-fadeIn">
           <ChatInterface
+            key={chatKey}
             initialMessage={inputValue}
             selectedModel={selectedModel}
             onClose={() => setShowChat(false)}
             models={models}
             setSelectedModel={setSelectedModel}
+            onNewChat={handleNewChat}
           />
         </div>
       )}

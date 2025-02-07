@@ -25,6 +25,32 @@ const swap = tool(
   }
 );
 
+const fetchExchangeRateTool = tool(
+  async ({ tokenName }) => {
+    try {
+      const result = await fetchExchangeRate(tokenName);
+      return result;
+    } catch (error) {
+      if (error instanceof Error) {
+        return `Sorry, I couldn't fetch the exchange rate: ${error.message}`;
+      }
+      return "Sorry, I couldn't fetch the exchange rate at this moment. Please try again later.";
+    }
+  },
+  {
+    name: "fetchExchangeRate",
+    description:
+      "fetches the exchange rate of a token against BTC using the token symbol (e.g., eth, btc, ltc)",
+    schema: z.object({
+      tokenName: z
+        .string()
+        .describe(
+          "the token symbol (like eth, btc, ltc) for which we need to find the exchange rate in BTC"
+        ),
+    }),
+  }
+);
+
 const fetchTokenPriceInUsdTool = tool(
   async ({ tokenAddress }) => {
     try {
@@ -190,7 +216,8 @@ const fetch24HChangeTool = tool(
 const model = new ChatGoogleGenerativeAI({
   model: "gemini-1.5-flash",
   temperature: 0,
-  apiKey: "AIzaSyDcKuuTt0a0xZlsQ7EVSCpwumXPvjfasCs",
+  apiKey:
+    process.env.GOOGLE_API_KEY || "AIzaSyDcKuuTt0a0xZlsQ7EVSCpwumXPvjfasCs",
   maxRetries: 2,
   disableStreaming: false,
 });
@@ -206,20 +233,16 @@ const prebuiltAgent = createReactAgent({
     fetchTotalValueLockedTool,
     fetchTopPoolsTool,
     fetchTrendingPoolsTool,
+    fetchExchangeRateTool,
   ],
 });
 
-import readline from "readline";
 import { fetchTotalValueLocked } from "./Tools/fetchTotalValue";
 import { fetchTopPools } from "./Tools/fetchTopPools";
 import { fetchTrendingPools } from "./Tools/fetchTrendingPools";
+import { fetchExchangeRate } from "./Tools/fetchExchangeRate";
 
-const rl = readline.createInterface({
-  input: process.stdin,
-  output: process.stdout,
-});
-
-const invokeAgent = async (userInput: string) => {
+export const invokeAgent = async (userInput: string): Promise<string> => {
   let inputs = {
     messages: [
       {
@@ -232,31 +255,23 @@ const invokeAgent = async (userInput: string) => {
       },
     ],
   };
+
+  let finalResponse = "";
   let stream = await prebuiltAgent.stream(inputs, {
     streamMode: "values",
   });
 
   for await (const { messages } of stream) {
     let msg = messages[messages?.length - 1];
-    console.log(msg.usage_metadata);
     if (msg?.content) {
-      console.log(msg.content);
+      finalResponse = msg.content;
     } else if (msg?.tool_calls?.length > 0) {
-      console.log(msg.tool_calls);
+      const toolResults = msg.tool_calls
+        .map((call: { output: any }) => call.output)
+        .join("\n");
+      finalResponse += toolResults;
     }
-    console.log("-----\n");
   }
-  askQuestion();
-};
 
-const askQuestion = () => {
-  rl.question('Enter your query (or "exit" to quit): ', (answer) => {
-    if (answer.toLowerCase() === "exit" || answer.toLowerCase() === "clear") {
-      rl.close();
-      return;
-    }
-    invokeAgent(answer);
-  });
+  return finalResponse || "I'm sorry, I couldn't process your request.";
 };
-
-askQuestion();

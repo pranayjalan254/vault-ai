@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { ArrowRight, Loader2, X, Beef, Mic } from "lucide-react";
 import { ModelSelector } from "./ModelSelector";
-import { useSpeechToText } from '../../../hooks/useSpeechToText';
+import { useSpeechToText } from "../../../hooks/useSpeechToText";
 
 interface ChatInterfaceProps {
   initialMessage: string;
@@ -9,6 +9,7 @@ interface ChatInterfaceProps {
   onClose: () => void;
   models: string[];
   setSelectedModel: (model: string) => void;
+  onNewChat: () => void; // Add this prop
 }
 
 interface Message {
@@ -24,6 +25,7 @@ export function ChatInterface({
   onClose,
   models,
   setSelectedModel,
+  onNewChat,
 }: ChatInterfaceProps) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputValue, setInputValue] = useState("");
@@ -32,20 +34,47 @@ export function ChatInterface({
   const chatContainerRef = useRef<HTMLDivElement>(null);
   const { isListening, startListening } = useSpeechToText();
 
-  // Simulate AI response (replace with actual API call)
-  const simulateAIResponse = async (userMessage: string) => {
+  // Replace simulateAIResponse with real API call
+  const getAIResponse = async (userMessage: string) => {
     setIsLoading(true);
-    await new Promise((resolve) => setTimeout(resolve, 1000));
-    const aiMessage = {
-      id: `ai-${Date.now()}`,
-      text: `This is a simulated response to: "${userMessage}"`,
-      isUser: false,
-      timestamp: new Date(),
-    };
-    setMessages((prev) => [...prev, aiMessage]);
-    setIsLoading(false);
+    try {
+      const response = await fetch("/api/agent", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ message: userMessage }),
+      });
+
+      const data = await response.json();
+
+      if (!data.success) {
+        throw new Error(data.error || "Failed to get response");
+      }
+
+      const aiMessage = {
+        id: `ai-${Date.now()}`,
+        text: data.response,
+        isUser: false,
+        timestamp: new Date(),
+      };
+
+      setMessages((prev) => [...prev, aiMessage]);
+    } catch (error) {
+      console.error("Error getting AI response:", error);
+      const errorMessage = {
+        id: `ai-${Date.now()}`,
+        text: "Sorry, I encountered an error processing your request.",
+        isUser: false,
+        timestamp: new Date(),
+      };
+      setMessages((prev) => [...prev, errorMessage]);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
+  // Update the useEffect to use the new function
   useEffect(() => {
     if (initialMessage.trim()) {
       const userMessage = {
@@ -55,7 +84,7 @@ export function ChatInterface({
         timestamp: new Date(),
       };
       setMessages([userMessage]);
-      simulateAIResponse(initialMessage);
+      getAIResponse(initialMessage);
     }
   }, [initialMessage]);
 
@@ -66,6 +95,7 @@ export function ChatInterface({
     }
   }, [messages]);
 
+  // Update handleSubmit to use the new function
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (inputValue.trim()) {
@@ -77,7 +107,7 @@ export function ChatInterface({
       };
       setMessages((prev) => [...prev, userMessage]);
       setInputValue("");
-      await simulateAIResponse(inputValue);
+      await getAIResponse(inputValue);
     }
   };
 
@@ -98,6 +128,12 @@ export function ChatInterface({
     setInputValue(text);
   };
 
+  const handleNewChat = () => {
+    setMessages([]);
+    setInputValue("");
+    onNewChat();
+  };
+
   return (
     <div className="h-full flex flex-col bg-black/20 backdrop-blur-lg">
       {/* Chat Header */}
@@ -110,12 +146,20 @@ export function ChatInterface({
             Vault AI Assistant
           </h2>
         </div>
-        <button
-          onClick={onClose}
-          className="p-2 text-gray-400 hover:text-purple-400 transition-colors rounded-lg hover:bg-white/5"
-        >
-          <X className="h-5 w-5" />
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={handleNewChat}
+            className="p-2 text-gray-400 hover:text-purple-400 transition-colors rounded-lg hover:bg-white/5"
+          >
+            <span className="text-sm">New Chat</span>
+          </button>
+          <button
+            onClick={onClose}
+            className="p-2 text-gray-400 hover:text-purple-400 transition-colors rounded-lg hover:bg-white/5"
+          >
+            <X className="h-5 w-5" />
+          </button>
+        </div>
       </div>
 
       {/* Chat Messages Area */}
@@ -178,7 +222,9 @@ export function ChatInterface({
               value={inputValue}
               onChange={(e) => setInputValue(e.target.value)}
               onKeyDown={handleKeyDown}
-              placeholder={isListening ? "Listening..." : "Type your message..."}
+              placeholder={
+                isListening ? "Listening..." : "Type your message..."
+              }
               className="w-full bg-white/5 border border-white/10 rounded-lg py-2 pl-4 pr-40 focus:outline-none focus:border-purple-500 placeholder-gray-500 text-sm backdrop-blur-sm text-white"
               disabled={isLoading || isListening}
             />
@@ -187,9 +233,9 @@ export function ChatInterface({
                 type="button"
                 onClick={() => startListening(handleSpeechInput)}
                 className={`p-2 rounded-lg transition-all ${
-                  isListening 
-                    ? 'bg-purple-500/20 text-purple-400 animate-pulse' 
-                    : 'text-gray-400 hover:text-purple-400'
+                  isListening
+                    ? "bg-purple-500/20 text-purple-400 animate-pulse"
+                    : "text-gray-400 hover:text-purple-400"
                 }`}
                 disabled={isLoading}
               >

@@ -1,6 +1,12 @@
 import React, { useEffect, useState } from "react";
 import { useWallets, usePrivy, useUser } from "@privy-io/react-auth";
-import { Loader2, TrendingUp, TrendingDown, ArrowRight } from "lucide-react";
+import {
+  TrendingUp,
+  TrendingDown,
+  ArrowRight,
+  ChevronDown,
+  ChevronUp,
+} from "lucide-react";
 import { ChainType, PortfolioResponse } from "../../../types/portfolio";
 import {
   fetchPortfolio,
@@ -11,8 +17,8 @@ import { Pie } from "react-chartjs-2";
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from "chart.js";
 import { FundWallet } from "../FundWallet/FundWallet";
 import { LogoutButton } from "../Buttons/LogoutButton";
-import { NotificationButton } from '../Buttons/NotificationButton';
-import { PortfolioLoadingSkeleton } from './LoadingSkeleton';
+import { NotificationButton } from "../Buttons/NotificationButton";
+import { PortfolioLoadingSkeleton } from "./LoadingSkeleton";
 
 ChartJS.register(ArcElement, Tooltip, Legend);
 
@@ -28,6 +34,8 @@ export function PortfolioView() {
     null
   );
   const [isLoading, setIsLoading] = useState(false);
+  const [expandedTokens, setExpandedTokens] = useState<Set<string>>(new Set());
+  const [error, setError] = useState<string | null>(null);
 
   const embeddedWallet = wallets.find(
     (wallet) => wallet.walletClientType === "privy"
@@ -38,18 +46,25 @@ export function PortfolioView() {
       if (!embeddedWallet?.address) return;
 
       setIsLoading(true);
+      setError(null);
       try {
         const [chainData, allData] = await Promise.all([
           fetchPortfolio(
-            "0x00ce496A3aE288Fec2BA5b73039DB4f7c31a9144",
+            "0xF977814e90dA44bFA03b6295A0616a897441aceC",
             selectedChain
           ),
-          fetchAllChainPortfolio("0x00ce496A3aE288Fec2BA5b73039DB4f7c31a9144"),
+          fetchAllChainPortfolio("0xF977814e90dA44bFA03b6295A0616a897441aceC"),
         ]);
+
+        if (!chainData.tokens.length && !allData.tokens.length) {
+          setError("No assets found for this address");
+        }
+
         setPortfolioData(chainData);
         setAllChainData(allData);
       } catch (error) {
         console.error("Failed to fetch portfolio:", error);
+        setError("Failed to load portfolio data");
       } finally {
         setIsLoading(false);
       }
@@ -99,6 +114,130 @@ export function PortfolioView() {
     cutout: "65%",
   };
 
+  const groupedTokens = React.useMemo(() => {
+    if (!allChainData?.tokens) return {};
+
+    return allChainData.tokens.reduce((acc: any, token) => {
+      const key = token.token.toLowerCase();
+      if (!acc[key]) {
+        acc[key] = [];
+      }
+      acc[key].push(token);
+      return acc;
+    }, {});
+  }, [allChainData?.tokens]);
+
+  const toggleTokenExpansion = (tokenName: string) => {
+    setExpandedTokens((prev) => {
+      const next = new Set(prev);
+      if (next.has(tokenName)) {
+        next.delete(tokenName);
+      } else {
+        next.add(tokenName);
+      }
+      return next;
+    });
+  };
+
+  const renderAllAssets = () => (
+    <div className="lg:col-span-3 space-y-4">
+      <h3 className="text-lg font-medium">All Assets</h3>
+      <div className="grid gap-4">
+        {Object.entries(groupedTokens as Record<string, any[]>).map(
+          ([tokenKey, tokens]) => {
+            const isExpanded = expandedTokens.has(tokenKey);
+            const totalValue = tokens.reduce(
+              (sum, t) =>
+                sum + parseFloat(t.value.replace("$", "").replace(",", "")),
+              0
+            );
+            const primaryToken = tokens[0];
+
+            return (
+              <div key={tokenKey} className="space-y-2">
+                <div
+                  className="bg-white/5 p-4 rounded-xl backdrop-blur-sm flex items-center justify-between hover:bg-white/10 transition-colors border border-white/10 cursor-pointer"
+                  onClick={() =>
+                    tokens.length > 1 && toggleTokenExpansion(tokenKey)
+                  }
+                >
+                  <div className="flex items-center gap-4">
+                    {primaryToken.logoUrl && (
+                      <img
+                        src={primaryToken.logoUrl}
+                        alt={primaryToken.symbol}
+                        className="w-10 h-10 rounded-full"
+                      />
+                    )}
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <p className="font-medium">{primaryToken.token}</p>
+                        {tokens.length > 1 && (
+                          <span className="text-xs px-2 py-1 bg-purple-500/20 text-purple-300 rounded-full">
+                            {tokens.length} chains
+                          </span>
+                        )}
+                      </div>
+                      <p className="text-sm text-gray-400">
+                        Total: ${totalValue.toFixed(2)}
+                      </p>
+                    </div>
+                  </div>
+                  {tokens.length > 1 && (
+                    <button className="text-gray-400">
+                      {isExpanded ? (
+                        <ChevronUp className="w-5 h-5" />
+                      ) : (
+                        <ChevronDown className="w-5 h-5" />
+                      )}
+                    </button>
+                  )}
+                </div>
+
+                {isExpanded && (
+                  <div className="ml-14 space-y-2">
+                    {tokens.map((token, idx) => (
+                      <div
+                        key={`${tokenKey}-${idx}`}
+                        className="bg-white/5 p-3 rounded-lg flex items-center justify-between"
+                      >
+                        <div className="flex items-center gap-2">
+                          <span className="text-sm font-medium bg-purple-500/20 text-purple-300 px-2 py-1 rounded-full">
+                            {token.chainName}
+                          </span>
+                          <span className="text-sm text-gray-400">
+                            {token.balance} {token.symbol}
+                          </span>
+                        </div>
+                        <div className="text-right">
+                          <p className="font-medium">{token.value}</p>
+                          <p
+                            className={`text-sm flex items-center justify-end gap-1 ${
+                              parseFloat(token.change24h) > 0
+                                ? "text-green-400"
+                                : "text-red-400"
+                            }`}
+                          >
+                            {parseFloat(token.change24h) > 0 ? (
+                              <TrendingUp className="w-3 h-3" />
+                            ) : (
+                              <TrendingDown className="w-3 h-3" />
+                            )}
+                            {token.change24h}
+                          </p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            );
+          }
+        )}
+      </div>
+    </div>
+  );
+
   if (!ready || !embeddedWallet) {
     return <PortfolioLoadingSkeleton />;
   }
@@ -137,7 +276,14 @@ export function PortfolioView() {
       </div>
 
       {isLoading ? (
-          <PortfolioLoadingSkeleton />
+        <PortfolioLoadingSkeleton />
+      ) : error ? (
+        <div className="glass-effect rounded-2xl p-8 text-center animate-fadeIn">
+          <p className="text-xl font-medium mb-2">{error}</p>
+          <p className="text-sm text-gray-400">
+            Please check your connection and try again
+          </p>
+        </div>
       ) : portfolioData && allChainData ? (
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 animate-slideUp">
           {/* Chain-specific Portfolio Card */}
@@ -214,58 +360,7 @@ export function PortfolioView() {
           </div>
 
           {/* All Chain Assets */}
-          <div className="lg:col-span-3 space-y-4">
-            <h3 className="text-lg font-medium">All Assets</h3>
-            <div className="grid gap-4">
-              {allChainData.tokens.map((token, index) => (
-                <div
-                  key={index}
-                  className="bg-white/5 p-4 rounded-xl backdrop-blur-sm flex items-center justify-between hover:bg-white/10 transition-colors border border-white/10"
-                >
-                  <div className="flex items-center gap-4">
-                    {token.logoUrl && (
-                      <img
-                        src={token.logoUrl}
-                        alt={token.symbol}
-                        className="w-10 h-10 rounded-full"
-                      />
-                    )}
-                    <div>
-                      <div className="flex items-center gap-2">
-                        <p className="font-medium">{token.token}</p>
-
-                        <span className="text-xs px-2 py-1 bg-purple-500/20 text-purple-300 rounded-full">
-                          {token.chainName}
-                        </span>
-                      </div>
-                      <p className="text-sm text-gray-400">
-                        {token.balance} {token.symbol}
-                      </p>
-                    </div>
-                  </div>
-                  <div className="text-right">
-                    <p className="font-medium">{token.value}</p>
-                    <p
-                      className={`text-sm flex items-center justify-end gap-1 ${
-                        parseFloat(token.change24h) > 0
-                          ? "text-green-400"
-                          : parseFloat(token.change24h) < 0
-                          ? "text-red-400"
-                          : "text-gray-400"
-                      }`}
-                    >
-                      {parseFloat(token.change24h) > 0 ? (
-                        <TrendingUp className="w-3 h-3" />
-                      ) : (
-                        <TrendingDown className="w-3 h-3" />
-                      )}
-                      {token.change24h}
-                    </p>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
+          {renderAllAssets()}
         </div>
       ) : (
         <div className="glass-effect rounded-2xl p-8 text-center animate-fadeIn">

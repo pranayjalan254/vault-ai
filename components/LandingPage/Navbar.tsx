@@ -35,7 +35,6 @@ export function Navbar() {
           <div className="hidden md:flex items-center space-x-10">
             <NavLink href="#features">Features</NavLink>
             <NavLink href="#how-it-works">How it Works</NavLink>
-            <NavLink href="#pricing">Pricing</NavLink>
             <button className="px-6 py-3 text-lg rounded-lg bg-purple-600 hover:bg-purple-700 transition-colors">
               Launch App
             </button>
