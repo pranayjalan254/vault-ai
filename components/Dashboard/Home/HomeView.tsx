@@ -1,8 +1,7 @@
-'use client';
+"use client";
 
 import React, { useState } from "react";
 import {
-  Beef as Bee,
   TrendingUp,
   Wallet2,
   BookOpen,
@@ -18,6 +17,7 @@ import { ChatInterface } from "./ChatInterface";
 import { NotificationButton } from "../Buttons/NotificationButton";
 import { useSpeechToText } from "../../../hooks/useSpeechToText";
 import style from "styled-jsx/style";
+import { FundWallet } from "../FundWallet/FundWallet";
 
 interface HomeViewProps {
   selectedModel: string;
@@ -36,13 +36,12 @@ export function HomeView({
 }: HomeViewProps) {
   const [inputValue, setInputValue] = useState("");
   const [showChat, setShowChat] = useState(false);
-  const [chatKey, setChatKey] = useState(0); // Add this new state
+  const [chatKey, setChatKey] = useState(0);
   const { isListening, startListening } = useSpeechToText();
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (inputValue.trim() && !isModelOpen) {
-      // Only trigger if model selector is not open
       setShowChat(true);
     }
   };
@@ -64,22 +63,24 @@ export function HomeView({
   };
 
   return (
-    <div className="flex flex-col justify-center h-full relative gradient-bg">
+    <div className="flex flex-col justify-center h-full relative bg-gradient-to-b from-black via-purple-950/20 to-black min-h-screen">
+      <div className="absolute inset-0 bg-grid-white/[0.02] bg-grid-pattern"></div>
       <div
-        className={`flex-1 transition-all duration-500 ${
+        className={`flex-1 transition-all duration-500 relative z-10 ${
           showChat ? "opacity-0 scale-95 h-0" : "opacity-100 scale-100"
         }`}
       >
         <div className="absolute top-6 right-6 flex items-center gap-4 animate-fadeIn">
-          <NotificationButton />
+          <FundWallet />
           <LogoutButton />
+          <NotificationButton />
         </div>
         <div
           className="flex flex-col items-center justify-center h-full max-w-3xl mx-auto pt-16 pb-8 animate-slideUp"
-          style={{ paddingTop: "135px" }}
+          style={{ paddingTop: "15px" }}
         >
-          <Bot className="w-10 h-10 text-purple-500" />
-          <h1 className="text-4xl font-semibold mb-2 gradient-text text-center">
+          <Bot className="w-10 h-10 text-purple-400 animate-pulse" />
+          <h1 className="text-4xl font-semibold mb-2 text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-600 text-center">
             Your AI-Powered DeFi Agent
           </h1>
           <p className="text-gray-400 mb-8 text-lg z-0 text-center">
@@ -153,7 +154,7 @@ export function HomeView({
         </div>
       </div>
       {showChat && (
-        <div className="animate-fadeIn">
+        <div className="animate-fadeIn relative z-10">
           <ChatInterface
             key={chatKey}
             initialMessage={inputValue}
