@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { fetch24HChange } from "../../../../../Agentic_Backend/src/Bridge/Tokens";
+import { fetch24HChange } from "../../../../../AI-Agent/src/Bridge/Tokens";
 
 export async function GET(
   request: Request,

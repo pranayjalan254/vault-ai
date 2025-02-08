@@ -14,12 +14,10 @@ export async function fetchPortfolio(
 ): Promise<PortfolioResponse> {
   try {
     const balanceResponse = await fetch(
-      `http://localhost:5174/bridge/getUserTokenBalances/${address}/${chain}`
+      `/bridge/getUserTokenBalances/${address}/${chain}`
     );
     const balanceData = await balanceResponse.json();
-    const changeResponse = await fetch(
-      `http://localhost:5174/bridge/getToken24hChange/${chain}`
-    );
+    const changeResponse = await fetch(`/bridge/getToken24hChange/${chain}`);
     const changeData = await changeResponse.json();
 
     const chainInfo = SUPPORTED_CHAINS.find((c) => c.id === chain);
@@ -27,7 +25,7 @@ export async function fetchPortfolio(
     const tokens = await Promise.all(
       balanceData.change.map(async (token: any) => {
         const priceResponse = await fetch(
-          `http://localhost:5174/bridge/getTokenPrice/${token.address}`
+          `/bridge/getTokenPrice/${token.address}`
         );
         const priceData = await priceResponse.json();
         const tokenChange = changeData.find(

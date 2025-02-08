@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { fetchTokenPriceInUsd } from "../../../../../Agentic_Backend/src/Bridge/Tokens";
+import { fetchTokenPriceInUsd } from "../../../../../AI-Agent/src/Bridge/Tokens";
 
 export async function GET(
   request: Request,

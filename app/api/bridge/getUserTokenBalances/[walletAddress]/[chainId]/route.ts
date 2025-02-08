@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { getUserTokenBalance } from "../../../../../../Agentic_Backend/src/Bridge/Wallet";
+import { getUserTokenBalance } from "../../../../../../AI-Agent/src/Bridge/Wallet";
 
 export async function GET(
   request: Request,
