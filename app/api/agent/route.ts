@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { invokeAgent } from "../../../Agentic_Backend/src/Agent/NewAgent";
+import { invokeAgent } from "../../../Agentic_Backend/dist/Agent/NewAgent";
 
 export async function POST(request: Request) {
   try {

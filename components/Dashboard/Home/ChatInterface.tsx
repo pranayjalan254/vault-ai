@@ -1,13 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import {
-  ArrowRight,
-  Loader2,
-  X,
-  Beef,
-  Mic,
-  ArrowDown,
-  Bot,
-} from "lucide-react";
+import { ArrowRight, Loader2, X, Mic, ArrowDown, Bot } from "lucide-react";
 import { ModelSelector } from "./ModelSelector";
 import { useSpeechToText } from "../../../hooks/useSpeechToText";
 
@@ -236,7 +228,7 @@ export function ChatInterface({
           {messages.length === 0 && !isLoading && (
             <div className="h-full flex flex-col items-center justify-center text-gray-400 gap-2 animate-fadeIn">
               <div className="p-3 rounded-full bg-white/5 backdrop-blur-sm hover:scale-105 transition-transform">
-                <Beef className="h-8 w-8 text-purple-400 animate-pulse" />
+                <Bot className="h-8 w-8 text-purple-400 animate-pulse" />
               </div>
               <p className="text-lg animate-slideUp">
                 How can I help you today?

@@ -3,27 +3,76 @@ import { z } from "zod";
 import dotenv from "dotenv";
 import { ChatGoogleGenerativeAI } from "@langchain/google-genai";
 import { createReactAgent } from "@langchain/langgraph/prebuilt";
-import { fetchTokenAddress, fetchTokenPriceInUsd } from "../Bridge/Tokens";
-import { fetch24HChange, fetchTokenDetails } from "../Bridge/Tokens";
+import {
+  fetchTokenAddress,
+  fetchTokenPriceInUsd,
+  fetch24HChange,
+  fetchTokenDetails,
+} from "../Bridge/Tokens";
+import { fetchTotalValueLocked } from "./Tools/fetchTotalValue";
+import { fetchTopPools } from "./Tools/fetchTopPools";
+import { fetchTrendingPools } from "./Tools/fetchTrendingPools";
+import { fetchExchangeRate } from "./Tools/fetchExchangeRate";
 import { SYSTEM_PROMPT } from "./systemPrompt";
-
+import { fetchChainId } from "../Bridge/Chains";
+import { fetch24HChangeAgent } from "./Tools/fetch24HChange";
+import { fetchTrendingCoins } from "./Tools/fetchTrendingCoin";
+import { JsonSerializer, throwError } from "typescript-json-serializer";
+// import { fetchChainId } from "../Bridge/Chains";
+// import { Swap } from "./Swap/swap";
 dotenv.config();
 
-const swap = tool(
-  async ({ sourceChain, sourceToken, destinationChain, destinationToken }) => {
-    return `Swapping token ${sourceToken} on chain ${sourceChain} to token ${destinationToken} on chain ${destinationChain}`;
-  },
-  {
-    name: "swap",
-    description: "swap or bridges two tokens from one chain to another",
-    schema: z.object({
-      sourceChain: z.string().describe("the source chain"),
-      destinationChain: z.string().describe("the destination chain"),
-      sourceToken: z.string().describe("the starting token"),
-      destinationToken: z.string().describe("the destination token"),
-    }),
-  }
-);
+// const swap = tool(
+//   async ({
+//     sourceChain,
+//     sourceToken,
+//     destinationChain,
+//     destinationToken,
+//     amount,
+//   }) => {
+//     console.log(destinationChain, sourceChain);
+//     try {
+//       const fromChain = await fetchChainId(sourceChain);
+//       const toChain = await fetchChainId(destinationChain);
+//       console.log(fromChain, toChain);
+//       let sourceTokenAddress = sourceToken.startsWith("0x")
+//         ? sourceToken
+//         : await fecthTokenAddressTool.invoke({
+//             tokenName: sourceToken.toLowerCase(),
+//             chainName: sourceChain.toUpperCase(),
+//           });
+
+//       let destinationTokenAddress = destinationToken.startsWith("0x")
+//         ? destinationToken
+//         : await fecthTokenAddressTool.invoke({
+//             tokenName: destinationToken.toLowerCase(),
+//             chainName: destinationChain.toUpperCase(),
+//           });
+//       const result = await Swap(
+//         sourceTokenAddress,
+//         destinationTokenAddress,
+//         fromChain.toString(),
+//         toChain.toString(),
+//         amount
+//       );
+//       return result;
+//     } catch (err) {
+//       console.log(err);
+//     }
+//   },
+//   {
+//     name: "swap",
+//     description:
+//       "swap or bridges two tokens from one chain to another by extracting the 5 parameters from the prompt accurately and calling the swap function",
+//     schema: z.object({
+//       sourceChain: z.string().describe("the source chain"),
+//       destinationChain: z.string().describe("the destination chain"),
+//       sourceToken: z.string().describe("the starting token"),
+//       destinationToken: z.string().describe("the destination token"),
+//       amount: z.string().describe("the amount of token to swap"),
+//     }),
+//   }
+// );
 
 const fetchExchangeRateTool = tool(
   async ({ tokenName }) => {
@@ -74,6 +123,35 @@ const fetchTokenPriceInUsdTool = tool(
   }
 );
 
+const fecthTokenAddressTool = tool(
+  async ({ tokenName, chainName }) => {
+    try {
+      const result = await fetchTokenAddress(tokenName, chainName);
+      if (!result) {
+        return `Sorry, I couldn't find details for ${tokenName}`;
+      }
+      return result;
+    } catch (error) {
+      return `Sorry, there was an error fetching details for ${tokenName}`;
+    }
+  },
+  {
+    name: "fetchTokenAddress",
+    description:
+      "fetches the address of a token using the token name and chain name as a parameter",
+    schema: z.object({
+      tokenName: z
+        .string()
+        .describe(
+          "the token Name for which we need to find the token Address and if the user asks for the price in usd also then call the fectchTokenPriceInUsdTool otherwise just return the address, if there's an error craft a sorry message yourself and return it"
+        ),
+      chainName: z
+        .string()
+        .describe("the chain Name for the token which needs to be fetched"),
+    }),
+  }
+);
+
 const fetchTotalValueLockedTool = tool(
   async ({ protocol }) => {
     try {
@@ -120,7 +198,7 @@ const fetchTopPoolsTool = tool(
     }),
   }
 );
-
+const defaultSerializer = new JsonSerializer();
 const fetchTrendingPoolsTool = tool(
   async ({ chain }) => {
     try {
@@ -128,7 +206,39 @@ const fetchTrendingPoolsTool = tool(
       if (!result) {
         return `Sorry, I couldn't find details for ${chain}`;
       }
-      return result;
+
+      // const formattedPools = result
+      //   .map(
+      //     (
+      //       pool: {
+      //         name: any;
+      //         baseTokenPriceUsd: string;
+      //         address: any;
+      //         poolCreatedAt: string | number | Date;
+      //         marketCapUsd: string;
+      //         priceChange24h: string;
+      //       },
+      //       index: number
+      //     ) => ` Pool ${index + 1}:
+      //           - Name: ${pool.name}
+      //           - Base Token Price (USD): $${parseFloat(
+      //             pool.baseTokenPriceUsd
+      //           ).toFixed(6)}
+      //           - Address: ${pool.address}
+      //           - Created At: ${new Date(
+      //             pool.poolCreatedAt
+      //           ).toLocaleDateString()}
+      //           - Market Cap (USD): $${parseFloat(
+      //             pool.marketCapUsd
+      //           ).toLocaleString()}
+      //           - 24h Price Change: ${parseFloat(pool.priceChange24h).toFixed(
+      //             2
+      //           )}%`
+      //   )
+      //   .join("\n");
+      // const data = defaultSerializer.serialize(formattedPools);
+      // return `Top 5 Trending Pools on ${chain}:\n${data}`;
+      return JSON.stringify(result);
     } catch (error) {
       return `Sorry, there was an error fetching details for ${chain}`;
     }
@@ -146,29 +256,27 @@ const fetchTrendingPoolsTool = tool(
     }),
   }
 );
-
-const fecthTokenAddressTool = tool(
-  async ({ tokenName }) => {
+const fetchTrendingCoinTool = tool(
+  async () => {
     try {
-      const result = await fetchTokenAddress(tokenName);
+      const result = await fetchTrendingCoins();
       if (!result) {
-        return `Sorry, I couldn't find details for ${tokenName}`;
+        return `The trending coins could not be fetched at the moment.`;
       }
       return result;
     } catch (error) {
-      return `Sorry, there was an error fetching details for ${tokenName}`;
+      return `Sorry, there was an error fetching details.`;
     }
   },
   {
-    name: "fetchTokenAddress",
+    name: "fetchTrendingCoins",
     description:
-      "fetches the address of a token using the token name as a parameter",
+      "fetches the top 6 trending coins. No parameters needed but requires a dummy parameter due to API constraints",
     schema: z.object({
-      tokenName: z
+      dummy: z
         .string()
-        .describe(
-          "the token Name for which we need to find the token Address and if the user asks for the price in usd also then call the fectchTokenPriceInUsdTool otherwise just return the address, if there's an error craft a sorry message yourself and return it"
-        ),
+        .optional()
+        .describe("This parameter is not required by the anyone"),
     }),
   }
 );
@@ -198,17 +306,24 @@ const fetchTokenDetailsTool = tool(
     }),
   }
 );
+
 const fetch24HChangeTool = tool(
-  async ({ sourceChain = 1 }) => {
-    const result = await fetch24HChange(Number(sourceChain));
+  async ({ sourceToken, sourceChain }) => {
+    const fromChain = await fetchChainId(sourceChain);
+    const result = await fetch24HChangeAgent(Number(fromChain), sourceToken);
     return result;
   },
   {
-    name: "fetch_24h_change",
+    name: "fetch24HChange",
     description:
-      "fetches the chain or 24h change for tokens on a particular chain by extracting chainId from parameters, if the chainId is not provided take the chainId as 1 and then",
+      "fetches the chain or 24h change for tokens on a particular chain by extracting chainId and token name from parameters, if the chainId is not provided take the chainId as 1 and then proceed",
     schema: z.object({
-      sourceChain: z.number().describe("the source chain"),
+      sourceChain: z.string().describe("the name of the source chain"),
+      sourceToken: z
+        .string()
+        .describe(
+          "the name of the token for which we need to fetch the 24h change for"
+        ),
     }),
   }
 );
@@ -216,8 +331,7 @@ const fetch24HChangeTool = tool(
 const model = new ChatGoogleGenerativeAI({
   model: "gemini-1.5-flash",
   temperature: 0,
-  apiKey:
-    process.env.GOOGLE_API_KEY || "AIzaSyDcKuuTt0a0xZlsQ7EVSCpwumXPvjfasCs",
+  apiKey: "AIzaSyDcKuuTt0a0xZlsQ7EVSCpwumXPvjfasCs",
   maxRetries: 2,
   disableStreaming: false,
 });
@@ -225,7 +339,7 @@ const model = new ChatGoogleGenerativeAI({
 const prebuiltAgent = createReactAgent({
   llm: model,
   tools: [
-    swap,
+    // swap,
     fetch24HChangeTool,
     fetchTokenPriceInUsdTool,
     fecthTokenAddressTool,
@@ -234,13 +348,9 @@ const prebuiltAgent = createReactAgent({
     fetchTopPoolsTool,
     fetchTrendingPoolsTool,
     fetchExchangeRateTool,
+    fetchTrendingCoinTool,
   ],
 });
-
-import { fetchTotalValueLocked } from "./Tools/fetchTotalValue";
-import { fetchTopPools } from "./Tools/fetchTopPools";
-import { fetchTrendingPools } from "./Tools/fetchTrendingPools";
-import { fetchExchangeRate } from "./Tools/fetchExchangeRate";
 
 export const invokeAgent = async (userInput: string): Promise<string> => {
   let inputs = {
@@ -257,20 +367,44 @@ export const invokeAgent = async (userInput: string): Promise<string> => {
   };
 
   let finalResponse = "";
+  let toolOutputs: string[] = [];
+
   let stream = await prebuiltAgent.stream(inputs, {
     streamMode: "values",
   });
 
   for await (const { messages } of stream) {
     let msg = messages[messages?.length - 1];
-    if (msg?.content) {
+    if (msg?.content && !msg?.tool_calls?.length) {
       finalResponse = msg.content;
     } else if (msg?.tool_calls?.length > 0) {
       const toolResults = msg.tool_calls
         .map((call: { output: any }) => call.output)
         .join("\n");
-      finalResponse += toolResults;
+      toolOutputs.push(toolResults);
     }
+  }
+
+  if (toolOutputs.length > 0 && !finalResponse) {
+    const summaryInputs = {
+      messages: [
+        {
+          role: "system",
+          content:
+            "Please summarize the following information in a clear and concise way:",
+        },
+        {
+          role: "user",
+          content: toolOutputs.join("\n"),
+        },
+      ],
+    };
+
+    const summaryResponse = await model.invoke(summaryInputs.messages);
+    finalResponse =
+      typeof summaryResponse.content === "string"
+        ? summaryResponse.content
+        : summaryResponse.content.join(" ");
   }
 
   return finalResponse || "I'm sorry, I couldn't process your request.";

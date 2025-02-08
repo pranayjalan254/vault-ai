@@ -42,46 +42,36 @@ export const getUserTokenBalance = async (
       RpcUrl =
         "https://arb-mainnet.g.alchemy.com/v2/EFea4UGAL1YCQXrjAcFypp0TwWstT4Tt";
     }
-    const tokenAddressArray = tokens.map(
-      (item: { address: any }) => item.address
-    );
+    const tokenAddressArray = tokens.map((item) => item.address);
     const alchemyWeb3 = createAlchemyWeb3(`${RpcUrl}`);
     const balance = await alchemyWeb3.alchemy.getTokenBalances(
       walletAddress,
       tokenAddressArray
     );
     const getTokenBalances = balance.tokenBalances;
-    const returnObjectArray = tokens.map(
-      (item: {
-        address: string;
-        decimal: number;
-        tokenName: any;
-        tokenLogo: any;
-        chain: { name: any; chainId: any };
-      }) => {
-        const balance = getTokenBalances.find(
-          (token: { contractAddress: string }) =>
-            token.contractAddress.toLowerCase() === item.address.toLowerCase()
-        );
-        const tokenBalance = balance?.tokenBalance || "0";
-        const adjustedBalance = (
-          parseInt(tokenBalance) / Math.pow(10, item.decimal)
-        ).toString();
+    const returnObjectArray = tokens.map((item) => {
+      const balance = getTokenBalances.find(
+        (token) =>
+          token.contractAddress.toLowerCase() === item.address.toLowerCase()
+      );
+      const tokenBalance = balance?.tokenBalance || "0";
+      const adjustedBalance = (
+        parseInt(tokenBalance) / Math.pow(10, item.decimal)
+      ).toString();
 
-        return {
-          token: item.tokenName,
-          address: item.address,
-          balance: adjustedBalance,
-          logoUrl: item.tokenLogo,
-          chainName: item.chain.name,
-          chainId: item.chain.chainId,
-        };
-      }
-    );
+      return {
+        token: item.tokenName,
+        address: item.address,
+        balance: adjustedBalance,
+        logoUrl: item.tokenLogo,
+        chainName: item.chain.name,
+        chainId: item.chain.chainId,
+      };
+    });
 
     // Filter out zero balances
     const nonZeroBalances = returnObjectArray.filter(
-      (token: { balance: string }) => parseFloat(token.balance) > 0
+      (token) => parseFloat(token.balance) > 0
     );
 
     return nonZeroBalances;

@@ -80,7 +80,7 @@ export function HomeView({
           style={{ paddingTop: "15px" }}
         >
           <Bot className="w-10 h-10 text-purple-400 animate-pulse" />
-          <h1 className="text-4xl font-semibold mb-2 text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-600 text-center">
+          <h1 className="text-4xl font-semibold mb-2 text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-600 text-center z-5">
             Your AI-Powered DeFi Agent
           </h1>
           <p className="text-gray-400 mb-8 text-lg z-0 text-center">
