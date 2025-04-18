@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { invokeAgent } from "../../../Agentic_Backend/dist/Agent/NewAgent";
+import { invokeAgent } from "../../../AI-Agent/src/Agent/NewAgent"; // Adjust the import path as necessary
 
 export async function POST(request: Request) {
   try {
