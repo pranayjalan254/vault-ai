@@ -41,14 +41,14 @@ export const getUserTokenBalance = async (
     } else {
       RpcUrl =
         "https://arb-mainnet.g.alchemy.com/v2/EFea4UGAL1YCQXrjAcFypp0TwWstT4Tt";
-    }
+    } //@ts-ignore
     const tokenAddressArray = tokens.map((item) => item.address);
     const alchemyWeb3 = createAlchemyWeb3(`${RpcUrl}`);
     const balance = await alchemyWeb3.alchemy.getTokenBalances(
       walletAddress,
       tokenAddressArray
     );
-    const getTokenBalances = balance.tokenBalances;
+    const getTokenBalances = balance.tokenBalances; //@ts-ignore
     const returnObjectArray = tokens.map((item) => {
       const balance = getTokenBalances.find(
         (token) =>
@@ -70,7 +70,7 @@ export const getUserTokenBalance = async (
     });
 
     // Filter out zero balances
-    const nonZeroBalances = returnObjectArray.filter(
+    const nonZeroBalances = returnObjectArray.filter( //@ts-ignore
       (token) => parseFloat(token.balance) > 0
     );
 

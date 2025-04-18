@@ -20,7 +20,8 @@ export const fetch24HChangeAgent = async (
         tokenName: true,
       },
     });
-    const formattedTokens = tokensArray
+
+    const formattedTokens = tokensArray //@ts-ignore
       .map((item) => {
         let chainForInput;
         const chainName = item.chain.name.toLowerCase();
@@ -44,6 +45,7 @@ export const fetch24HChangeAgent = async (
       ([key, change]) => {
         const tokenAddress = key.split(":")[1];
         const tokenDetails = tokensArray.filter(
+          //@ts-ignore
           (item) => item.address === tokenAddress
         );
         return {

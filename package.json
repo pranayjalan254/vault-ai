@@ -9,6 +9,8 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@0xsquid/sdk": "^2.9.4",
+    "@0xsquid/squid-types": "^0.1.152",
     "@alch/alchemy-web3": "^1.4.7",
     "@coinbase/agentkit": "^0.1.1",
     "@coinbase/agentkit-langchain": "^0.1.0",
